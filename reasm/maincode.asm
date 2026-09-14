@@ -3824,7 +3824,8 @@ FUN_1000_2760:
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
 ;ANALYSIS: seems to be related to camera rotation and maybe position, if I nop it the camera stops rotating and following the car
-;MODIFICATIONS: before ES and BP was used as temporary storage, this broke protected mode (the writing to ES part), modified to use globals as locals (leaf function, no problem)
+;MODIFICATIONS: before ES and that other register we shall not name were used as temporary storage,
+;this broke protected mode (the writing to ES part), modified to use globals as locals (leaf function, no problem)
 FUN_1000_277e:
                               ;XREF[10]:    1000:0b88(c),1000:13ea(c),1000:19ee(c),1000:1aa6(c),
                               ;             1000:1b99(c),1000:1c4e(c),1000:2001(c),1000:20b8(c),
