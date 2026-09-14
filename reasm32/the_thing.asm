@@ -27,15 +27,17 @@ all_segments:
     times 256 dd 0
 
 
+align 4
 _call_portal:
 data_callregs:
 call_portal:
-    .msg: dw 0
     .axr: dw 0
     .bxr: dw 0
     .cxr: dw 0
     .dxr: dw 0
     .cfs: dw 0
+    dw 0 ; alignment
+    .caller: dd 0
 
 ;TODO guard value
 
@@ -52,6 +54,7 @@ call_portal:
 section .text
 
 %ifdef WIN32
+    extern mydoscall_
     global asm_f_init_
     global asm_render_
     global asm_physics_
@@ -68,20 +71,30 @@ section .text
 
 
 DOS3Call:
+    PUSH dword [ESP]
+    POP  dword [call_portal.caller]
+
     MOV [call_portal.axr], AX
     MOV [call_portal.bxr], BX
     MOV [call_portal.cxr], CX
     MOV [call_portal.dxr], DX
 
-    ;this need to be writen last
-    ;there is actually a small but non-zero chance of the function in the C code getting called in-between the MOVs otherwise
-    MOV word [call_portal.msg], 0xd3ca
+    PUSHAD
 
-    .mloop:
-      ;busy wait until the C side does its thing
-      pause
-      cmp word [call_portal.msg], 0xd3ca
-    jz .mloop
+    TEST ESP, 0x3
+    JNZ .desalinhado
+
+    call mydoscall_
+    JMP .end
+
+    .desalinhado:
+        SUB ESP, 2
+        CALL mydoscall_
+        ADD ESP, 2
+
+    .end:
+
+    POPAD
 
     MOV AX, [call_portal.axr]
     MOV BX, [call_portal.bxr]
@@ -102,7 +115,6 @@ asm_f_init_:
     call f_init
 
     MOV word [call_portal.axr],  AX
-    MOV word [call_portal.msg], 0xbeef
 
     airlock_epilogue
     ret
