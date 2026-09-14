@@ -51,8 +51,8 @@ f_init:
     call far DOS3Call
     JC          .LAB_LOC_6
     MOV         word [0x1a4b],AX
-    CALL        FUN_1000_24c0
-    CALL        FUN_1000_255c
+    CALL        FUN_INIT_24c0
+    CALL        FUN_INIT_255c
     MOV         word [0x5bba],0x0     ;= 0001h
     MOV         DI,0x5bd0
     MOV         word [0x5bbc],DI
@@ -66,14 +66,14 @@ f_init:
     MOV         BX,0x7a00
     MOV         DX,word [SI + 0x5af7] ;= 5B01h
     PUSH        SI
-    CALL        FUN_1000_2454
+    CALL        FUN_INIT_2454
     POP         SI
     JC          .LAB_LOC_5
     PUSH        AX
     PUSH        DI
     PUSH        SI
     MOV         SI,word [SI + 0x5bbc]
-    CALL        FUN_1000_2431
+    CALL        FUN_INIT_2431
     POP         SI
     POP         DI
     POP         AX
@@ -87,7 +87,7 @@ f_init:
     call far DOS3Call
     MOV         BX,AX
     JC          .LAB_LOC_4
-    CALL        FUN_1000_5a95
+    CALL        FUN_INIT_5a95
     PUSH        BX
     CMP         AX,0x100
     JLE         .LAB_LOC_2
@@ -107,7 +107,7 @@ f_init:
     MOV         word [DI + 0x1e],AX
     MOV         ES,AX
     XOR         DI,DI
-    CALL        FUN_1000_5acf
+    CALL        FUN_INIT_5acf
 .LAB_LOC_3:
     MOV         AH,0x3e
     call far DOS3Call
@@ -124,9 +124,9 @@ f_init:
     JMP         .load_cars_loop
 
 .LAB_LOC_5:
-    CALL        FUN_1000_2b70
+    CALL        FUN_INIT_2b70
     JC          .LAB_LOC_6
-    ;CALL        FUN_1000_57e0 ;FIXME restore sound!
+    ;CALL        FUN_INIT_57e0 ;FIXME restore sound!
     MOV         word [0x6f],DX
     MOV         word [0x71],AX
     
@@ -197,10 +197,10 @@ FUN_main_render:
     MOV         DI,0x80
     CALL f_cam_select
     MOV         BX,word [0xc6]
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     SAR         AX,0x7
     MOV         word [0x5f7],AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     SAR         AX,0x7
     MOV         word [0x5f9],AX
     MOV         SI,0xc2
@@ -261,10 +261,10 @@ FUN_main_render:
     MOV         DI,0x80
     CALL f_cam_select
     MOV         BX,word [0xc6]
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     SAR         AX,0x7
     MOV         word [0x5f7],AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     SAR         AX,0x7
     MOV         word [0x5f9],AX
     MOV         SI,0xc2
@@ -322,10 +322,10 @@ FUN_main_render:
     MOV         DI,0x92
     CALL f_cam_select
     MOV         BX,word [0xc6]
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     SAR         AX,0x7
     MOV         word [0x5f7],AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     SAR         AX,0x7
     MOV         word [0x5f9],AX
     MOV         SI,0xc2
@@ -557,11 +557,11 @@ F_0693:
     ADD         SI,word [SI]
     INC         SI
     INC         SI
-    CALL        FUN_1000_1091
+    CALL        FUN_PHYSICS_1091
     MOV         dword [0xe0],EAX
     MOV         dword [0xe4],EBX
     MOV         dword [0xe8],ECX
-    CALL        FUN_1000_10b6
+    CALL        FUN_PHYSICS_10b6
     MOV         dword [0xec],EAX
     MOV         dword [0xf0],EBX
     MOV         dword [0xf4],ECX
@@ -569,18 +569,18 @@ F_0693:
     MOV         AX, word [0xed]
     MOV         BX,word [0xf1]
     NEG         AX
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     PUSH        AX
     SUB         AX,word [0xc6]
     ADD         word [0xc6],AX
     MOV         AX, word [0xe1]
     MOV         BX,word [0xe5]
-    CALL        FUN_1000_26dd
+    CALL        FUN_PHYSICS_26dd
     MOV         CX,AX
     MOV         AX, word [0xe1]
     MOV         BX,word [0xe5]
     NEG         AX
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     POP         BX
     SUB         BX,AX
     MOV         BX,CX
@@ -588,17 +588,17 @@ F_0693:
     NEG         BX
 .LAB_LOC_1:
     MOV         AX, word [0xe9]
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     NEG         AX
     SUB         AX,word [0xc2]
     ADD         word [0xc2],AX
     MOV         AX, word [0xed]
     MOV         BX,word [0xf1]
     MOV         CX,word [0xf5]
-    CALL        FUN_1000_26dd
+    CALL        FUN_PHYSICS_26dd
     MOV         BX,AX
     MOV         AX,CX
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     NEG         AX
     SUB         AX,word [0xc4]
     ADD         word [0xc4],AX
@@ -620,11 +620,11 @@ F_073f:
     ADD         SI,word [SI]
     INC         SI
     INC         SI
-    CALL        FUN_1000_1091
+    CALL        FUN_PHYSICS_1091
     MOV         dword [0xe0],EAX
     MOV         dword [0xe4],EBX
     MOV         dword [0xe8],ECX
-    CALL        FUN_1000_10b6
+    CALL        FUN_PHYSICS_10b6
     MOV         dword [0xec],EAX
     MOV         dword [0xf0],EBX
     MOV         dword [0xf4],ECX
@@ -632,55 +632,55 @@ F_073f:
     MOV         AX, word [0xed]
     MOV         BX,word [0xf1]
     NEG         EAX
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     SUB         AX,word [0xc6]
     ADD         word [0xc6],AX
     MOV         BX,word [0xc6]
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     NEG         AX
     SAR         AX,0x5
     ADD         AX,word [0xb0]
     PUSH        AX
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     SAR         AX,0x5
     ADD         AX,word [0xac]
     POP         BX
-    CALL        FUN_1000_25c5
+    CALL        FUN_SHARED_25c5
     SUB         AX,word [0xb4]
     MOV         BX,0x3ff
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     SUB         AX,word [0xc4]
     SAR         AX,0x2
     ADD         word [0xc4],AX
     MOV         BX,word [0xc6]
     ADD         BX,0x2000
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     NEG         AX
     SAR         AX,0x6
     ADD         AX,word [0xb0]
     PUSH        AX
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     SAR         AX,0x6
     POP         BX
     ADD         AX,word [0xac]
-    CALL        FUN_1000_25c5
+    CALL        FUN_SHARED_25c5
     PUSH        AX
     MOV         BX,word [0xc6]
     SUB         BX,0x2000
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     NEG         AX
     SAR         AX,0x6
     ADD         AX,word [0xb0]
     PUSH        AX
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     SAR         AX,0x6
     POP         BX
     ADD         AX,word [0xac]
-    CALL        FUN_1000_25c5
+    CALL        FUN_SHARED_25c5
     POP         BX
     SUB         AX,BX
     MOV         BX,0x1ff
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     SUB         AX,word [0xc2]
     SAR         AX,0x2
     ADD         word [0xc2],AX
@@ -695,7 +695,7 @@ F_0828:
     MOV         dword [0xae],EAX
     MOV         AX, word [0xac]
     MOV         BX,word [0xb0]
-    CALL        FUN_1000_25c5
+    CALL        FUN_SHARED_25c5
     ADD         AX,word [0x11c]
     SHL         EAX,0x10
     MOV         dword [0xb2],EAX
@@ -708,16 +708,16 @@ F_0828:
     NEG         BX
     PUSH        AX
     PUSH        BX
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     SUB         AX,word [0xc6]
     ADD         word [0xc6],AX
     POP         BX
     POP         AX
-    CALL        FUN_1000_26dd
+    CALL        FUN_PHYSICS_26dd
     MOV         BX,AX
     MOV         AX,word [SI + 0xa]
     SUB         AX,word [0xb4]
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     SUB         AX,word [0xc4]
     ADD         word [0xc4],AX
     XOR         AX,AX
@@ -737,12 +737,12 @@ F_0893:
     MOV         BX,word [SI + 0x6]
     SUB         BX,word [DI + 0x6]
     NEG         BX
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     MOV         word [DI + 0xc],AX
     MOV         BX,AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     MOV         CX,AX
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     MOV         BX,CX
     MOV         CX,word [0x11e]
     SHL         CX,0x1
@@ -761,7 +761,7 @@ F_0893:
     ADD         word [DI + 0x6],BX
     MOV         AX,word [DI + 0x2]
     MOV         BX,word [DI + 0x6]
-    CALL        FUN_1000_25c5
+    CALL        FUN_SHARED_25c5
     MOV         BX,AX
     ADD         BX,0x28
     ADD         AX,word [0x11c]
@@ -774,7 +774,7 @@ F_0893:
     MOV         BX,word [0x11e]
     MOV         AX,word [SI + 0xa]
     SUB         AX,word [DI + 0xa]
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     SUB         AX,word [DI + 0xe]
     SAR         AX,0x2
     ADD         word [DI + 0xe],AX
@@ -838,12 +838,12 @@ F_0948:
     SUB         AX,word [0xac]
     SUB         BX,word [0xb0]
     NEG         BX
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     MOV         word [0xc6],AX
     MOV         BX,AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     MOV         CX,AX
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     MOV         BX,CX
     MOV         CX,word [0x11e]
     SHL         CX,0x1
@@ -862,7 +862,7 @@ F_0948:
     ADD         word [0xb0],BX
     MOV         AX, word [0xac]
     MOV         BX,word [0xb0]
-    CALL        FUN_1000_25c5
+    CALL        FUN_SHARED_25c5
     MOV         BX,AX
     ADD         BX,0x28
     ADD         AX,word [0x11c]
@@ -875,7 +875,7 @@ F_0948:
     MOV         BX,word [0x11e]
     MOV         AX, word [0xcc]
     SUB         AX,word [0xb4]
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     SUB         AX,word [0xc4]
     SAR         AX,0x2
     ADD         word [0xc4],AX
@@ -887,7 +887,7 @@ F_0948:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_0a3b:
+FUN_PHYSICS_0a3b:
                               ;XREF[1]:     1000:56ce(c)
     PUSH        SI
     PUSH        DI
@@ -907,7 +907,7 @@ FUN_1000_0a3b:
     SHL         SI,0x1
     MOV         SI,word [SI + 0x5bbc]
     POPF
-    CALL        FUN_1000_0a82
+    CALL        FUN_PHYSICS_0a82
     JMP         .LAB_LOC_1
 .LAB_LOC_4:
     PUSHF
@@ -916,12 +916,12 @@ FUN_1000_0a3b:
     SHL         SI,0x1
     MOV         SI,word [SI + 0x5bbc]
     POPF
-    CALL        FUN_1000_0a82
+    CALL        FUN_PHYSICS_0a82
     JMP         .LAB_LOC_2
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_0a82:
+FUN_PHYSICS_0a82:
                               ;XREF[2]:     1000:0a66(c),1000:0a7d(c)
     PUSHF
     MOV         DI,SI
@@ -1019,7 +1019,7 @@ FUN_1000_0b25:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_0bb5:
+FUN_PHYSICS_0bb5:
                               ;XREF[1]:     1000:56cb(c)
     XOR         DI,DI
     CMP         DI,word [0x3e51]
@@ -1044,7 +1044,7 @@ FUN_1000_0bb5:
     PUSH        AX
     PUSH        BX
     PUSH        CX
-    CALL        FUN_1000_25c5
+    CALL        FUN_SHARED_25c5
     POP         CX
     CMP         AX,CX
     POP         BX
@@ -1165,7 +1165,7 @@ FUN_1000_0cd3:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_0d2a:
+FUN_PHYSICS_0d2a:
                               ;XREF[1]:     1000:56b4(c)
     MOVZX       BX,byte [DI]
     MOV         AL,byte [BX + CSD_DAT_keys_571e]
@@ -1262,7 +1262,7 @@ FUN_1000_0d2a:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_0e28:
+FUN_PHYSICS_0e28:
                               ;XREF[1]:     1000:48db(c)
     MOV         DI,SI
     ADD         DI,word [SI]
@@ -1292,7 +1292,7 @@ FUN_1000_0e28:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_0e69:
+FUN_PHYSICS_0e69:
                               ;XREF[1]:     1000:4b6f(c)
     CMP         AX,0x0
     JZ          .LAB_LOC_1
@@ -1309,7 +1309,7 @@ FUN_1000_0e69:
 .LAB_LOC_1:
     TEST        word [CSD_WORD_1000_0e67],0x1
     JNZ         .LAB_LOC_2
-    CALL        FUN_1000_1136
+    CALL        FUN_PHYSICS_1136
     OR          word [CSD_WORD_1000_0e67],0x1
 .LAB_LOC_2:
     MOV         EAX,[CSD_DWORD_1000_12a7]
@@ -1320,7 +1320,7 @@ FUN_1000_0e69:
 .LAB_LOC_3:
     TEST        word [CSD_WORD_1000_0e67],0x1
     JNZ         .LAB_LOC_4
-    CALL        FUN_1000_1136
+    CALL        FUN_PHYSICS_1136
     OR          word [CSD_WORD_1000_0e67],0x1
 .LAB_LOC_4:
     MOV         EAX,[CSD_DWORD_1000_12a7]
@@ -1334,7 +1334,7 @@ FUN_1000_0e69:
     PUSH        SI
     ADD         SI,word [SI]
     ADD         SI,0x2
-    CALL        FUN_1000_10b6
+    CALL        FUN_PHYSICS_10b6
     MOV         [CSD_DWORD_1000_12bf],EAX
     MOV         dword [CSD_DWORD_1000_12c3],EBX
     MOV         dword [CSD_DWORD_1000_12c7],ECX
@@ -1352,7 +1352,7 @@ FUN_1000_0e69:
     PUSH        SI
     ADD         SI,word [SI]
     ADD         SI,0x2
-    CALL        FUN_1000_10b6
+    CALL        FUN_PHYSICS_10b6
     MOV         [CSD_DWORD_1000_12bf],EAX
     MOV         dword [CSD_DWORD_1000_12c3],EBX
     MOV         dword [CSD_DWORD_1000_12c7],ECX
@@ -1367,7 +1367,7 @@ FUN_1000_0e69:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_0f67:
+FUN_PHYSICS_0f67:
                               ;XREF[1]:     1000:4bd5(c)
     MOV         CX,word [SI + 0x8]
     CMP         AX,0x0
@@ -1430,13 +1430,13 @@ FUN_1000_0f67:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_1003:
+FUN_PHYSICS_1003:
                               ;XREF[1]:     1000:497a(c)
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_1004:
+FUN_PHYSICS_1004:
                               ;XREF[1]:     1000:56b7(c)
     MOV         AX,word [SI + 0xa]
     MOV         word [SI + 0x16],AX
@@ -1490,7 +1490,7 @@ FUN_1000_1004:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_1091:
+FUN_PHYSICS_1091:
                               ;XREF[4]:     1000:06b4(c),1000:0760(c),1000:113c(c),1000:11f6(c)
     MOV         EDX,dword [SI + 0xc4]
     SUB         EDX,dword [SI + 0xa8]
@@ -1499,12 +1499,12 @@ FUN_1000_1091:
     MOV         ECX,dword [SI + 0xcc]
     SUB         ECX,dword [SI + 0xb0]
     MOV         EAX,EDX
-    CALL        FUN_1000_2726
+    CALL        FUN_PHYSICS_2726
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_10b6:
+FUN_PHYSICS_10b6:
                               ;XREF[6]:     1000:06c5(c),1000:0771(c),1000:0ef4(c),1000:0f36(c),
                               ;             1000:1150(c),1000:120a(c)
     MOV         EDX,dword [SI + 0x70]
@@ -1520,7 +1520,7 @@ FUN_1000_10b6:
     ADD         ECX,dword [SI + 0x94]
     SUB         ECX,dword [SI + 0xcc]
     MOV         EAX,EDX
-    CALL        FUN_1000_2726
+    CALL        FUN_PHYSICS_2726
     RET
 
  ; 1000:1135 [UNDEFINED BYTES REMOVED]
@@ -1529,25 +1529,25 @@ FUN_1000_10b6:
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
 ;ANALYSIS: related to steering, disabling this function disables steering
-FUN_1000_1136:
+FUN_PHYSICS_1136:
                               ;XREF[2]:     1000:0e9a(c),1000:0ec4(c)
     PUSH        SI
     ADD         SI,word [SI]
     ADD         SI,0x2
-    CALL        FUN_1000_1091
+    CALL        FUN_PHYSICS_1091
     MOV         [CSD_DWORD_1000_12b3],EAX
     MOV         dword [CSD_DWORD_1000_12b7],EBX
     MOV         dword [CSD_DWORD_1000_12bb],ECX
-    CALL        FUN_1000_10b6
+    CALL        FUN_PHYSICS_10b6
     MOV         [CSD_DWORD_1000_12bf],EAX
     MOV         dword [CSD_DWORD_1000_12c3],EBX
     MOV         dword [CSD_DWORD_1000_12c7],ECX
     POP         SI
     MOV         BX,word [SI + 0x16]
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     SHL         EAX,0x10
     MOV         [CSD_DWORD_1000_129f],EAX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     SHL         EAX,0x10
     MOV         [CSD_DWORD_1000_12a3],EAX                ;= 7FFF0000h
     MOV         EAX,[CSD_DWORD_1000_12bf]
@@ -1584,20 +1584,20 @@ FUN_1000_11f0:
     PUSH        SI
     ADD         SI,word [SI]
     ADD         SI,0x2
-    CALL        FUN_1000_1091
+    CALL        FUN_PHYSICS_1091
     MOV         [CSD_DWORD_1000_12b3],EAX
     MOV         dword [CSD_DWORD_1000_12b7],EBX
     MOV         dword [CSD_DWORD_1000_12bb],ECX
-    CALL        FUN_1000_10b6
+    CALL        FUN_PHYSICS_10b6
     MOV         [CSD_DWORD_1000_12bf],EAX
     MOV         dword [CSD_DWORD_1000_12c3],EBX
     MOV         dword [CSD_DWORD_1000_12c7],ECX
     POP         SI
     MOV         BX,word [SI + 0x16]
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     SHL         EAX,0x10
     MOV         [CSD_DWORD_1000_129f],EAX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     SHL         EAX,0x10
     MOV         [CSD_DWORD_1000_12a3],EAX                ;= 7FFF0000h
     MOV         EAX,[CSD_DWORD_1000_12bf]
@@ -1673,7 +1673,7 @@ FUN_1000_1347:
     ROR         EBX,0x10
     PUSH        AX
     PUSH        BX
-    CALL        FUN_1000_25c5
+    CALL        FUN_SHARED_25c5
     MOV         CX,AX
     POP         BX
     POP         AX
@@ -2183,12 +2183,12 @@ FUN_1000_1408:
     SUB         AX,word [DI + 0x126]
     SUB         BX,word [DI + 0x128]
     SUB         CX,word [DI + 0x12a]
-    CALL        FUN_1000_271d
+    CALL        FUN_PHYSICS_271d
     MOVSX       EBP,AX
     MOV         AX,word [SI + 0x126]
     MOV         BX,word [SI + 0x128]
     MOV         CX,word [SI + 0x12a]
-    CALL        FUN_1000_271d
+    CALL        FUN_PHYSICS_271d
     IMUL        EBP
     MOV         EBP,EAX
     MOV         AX,word [DI + 0x126]
@@ -2240,11 +2240,11 @@ FUN_1000_1408:
     MOV         BX,word [DI + 0x12e]
     SUB         AX,DX
     SUB         BX,BP
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     MOV         BX,AX
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     MOV         BP,AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     MOV         BX,AX
     MOV         AX,word [SI]
     IMUL        BX
@@ -3440,7 +3440,7 @@ FUN_1000_2418:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_2431:
+FUN_INIT_2431:
                               ;XREF[1]:     1000:01b8(c)
     MOV         DI,SI
     MOV         CX,word [SI]
@@ -3463,7 +3463,7 @@ FUN_1000_2431:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_2454:
+FUN_INIT_2454:
                               ;XREF[1]:     1000:01a9(c)
 
     PUSH        AX
@@ -3495,7 +3495,7 @@ FUN_1000_2454:
     POP         AX
     PUSH        AX
     PUSH        BX
-    CALL        FUN_1000_25c5
+    CALL        FUN_SHARED_25c5
     MOV         CX,AX
     ADD         CX,0x64
     POP         BX
@@ -3525,25 +3525,25 @@ FUN_1000_2454:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_24c0:
+FUN_INIT_24c0:
                               ;XREF[1]:     1000:017e(c)
     PUSH        ES
     MOV         DX,0x1a03
     MOV         ES,word [0x1a45]
     XOR         DI,DI
-    CALL        FUN_1000_5a60
+    CALL        FUN_INIT_5a60
     JC          .LAB_LOC_1
     MOV         DX,0x1a20
     MOV         ES,word [0x1a4b]
     XOR         DI,DI
-    CALL        FUN_1000_5a60
+    CALL        FUN_INIT_5a60
     JC          .LAB_LOC_1
     MOV         DX,0x1a0b
     MOV         AL,0x0
     MOV         AH,0x3d
     call far DOS3Call
     MOV         BX,AX
-    CALL        FUN_1000_5a95
+    CALL        FUN_INIT_5a95
     JC          .LAB_LOC_1
     MOV         CX,0xffff
     MOV         DX,0xfd00
@@ -3560,7 +3560,7 @@ FUN_1000_24c0:
     call far DOS3Call
     MOV         ES,word [0x1a47]
     XOR         DI,DI
-    CALL        FUN_1000_5acf
+    CALL        FUN_INIT_5acf
     JC          .LAB_LOC_1
     MOV         AH,0x3e
     call far DOS3Call
@@ -3593,19 +3593,19 @@ FUN_1000_24c0:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_255c:
+FUN_INIT_255c:
                               ;XREF[1]:     1000:0181(c)
     PUSH        ES
     MOV         DX,0x1a13
     MOV         ES,word [0x1a49]
     XOR         DI,DI
-    CALL        FUN_1000_5a60
+    CALL        FUN_INIT_5a60
     POP         ES
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_256b:
+FUN_SHARED_256b:
                               ;XREF[2]:     1000:261a(c),1000:265b(c)
     MOV         AX, word [0x5ac1]
     IMUL        word [0x5ac9]
@@ -3638,7 +3638,7 @@ FUN_1000_256b:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_25c5:
+FUN_SHARED_25c5:
                               ;XREF[9]:     1000:07b4(c),1000:07ec(c),1000:0810(c),1000:083e(c),
                               ;             1000:08e1(c),1000:09f6(c),1000:0c0d(c),1000:1372(c),
                               ;             1000:2486(c)
@@ -3667,7 +3667,7 @@ FUN_1000_25c5:
     SUB         AX,CX
     MOV         word [0x5acb],AX
     PUSH        CX
-    CALL        FUN_1000_256b
+    CALL        FUN_SHARED_256b
     POP         CX
     ADD         AX,CX
     JMP         .LAB_LOC_2
@@ -3691,7 +3691,7 @@ FUN_1000_25c5:
     SUB         AX,CX
     MOV         word [0x5ac5],AX
     PUSH        CX
-    CALL        FUN_1000_256b
+    CALL        FUN_SHARED_256b
     POP         CX
     ADD         AX,CX
 .LAB_LOC_2:
@@ -3725,16 +3725,16 @@ FUN_1000_2662:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_26dd:
+FUN_PHYSICS_26dd:
                               ;XREF[5]:     1000:06f3(c),1000:072a(c),1000:0870(c),1000:271d(c),
                               ;             1000:2722(c)
     PUSH        AX
     PUSH        BX
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     TEST        AH,0x60
     JP          .LAB_LOC_1
     MOV         BX,AX
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     MOVSX       EBX,AX
     ADD         SP,0x2
     POP         AX
@@ -3745,7 +3745,7 @@ FUN_1000_26dd:
     RET
 .LAB_LOC_1:
     MOV         BX,AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     MOVSX       EBX,AX
     POP         AX
     ADD         SP,0x2
@@ -3757,16 +3757,16 @@ FUN_1000_26dd:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_271d:
+FUN_PHYSICS_271d:
                               ;XREF[4]:     1000:17a4(c),1000:17b7(c),1000:2738(c),1000:57cd(c)
-    CALL        FUN_1000_26dd
+    CALL        FUN_PHYSICS_26dd
     MOV         BX,CX
-    CALL        FUN_1000_26dd
+    CALL        FUN_PHYSICS_26dd
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_2726:
+FUN_PHYSICS_2726:
                               ;XREF[3]:     1000:10b2(c),1000:10f2(c),1000:57d4(c)
     PUSH        EAX
     PUSH        EBX
@@ -3774,7 +3774,7 @@ FUN_1000_2726:
     SAR         EAX,0x10
     SAR         EBX,0x10
     SAR         ECX,0x10
-    CALL        FUN_1000_271d
+    CALL        FUN_PHYSICS_271d
     MOV         EBX,EAX
     INC         EBX
     POP         EAX
@@ -3912,20 +3912,20 @@ FUN_1000_27f1:
 FUN_1000_2989:
                               ;XREF[3]:     1000:02ba(c),1000:0386(c),1000:044f(c)
     MOV         BX,word [SI]
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     MOV         word [0xd100],AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     MOV         word [0xd102],AX
     MOV         BX,word [SI + 0x2]
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     MOV         word [0xd104],AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     MOV         word [0xd106],AX
     MOV         BX,word [SI + 0x4]
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     NEG         AX
     MOV         word [0xd108],AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     MOV         word [0xd10a],AX
     MOV         AX, word [0xd100]
     IMUL        word [0xd104]
@@ -4029,7 +4029,7 @@ FUN_1000_2989:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_2aad:
+FUN_PHYSICS_2aad:
                               ;XREF[19]:    1000:02a2(c),1000:036e(c),1000:0437(c),1000:07a9(c),
                               ;             1000:07e1(c),1000:0805(c),1000:08b2(c),1000:09c0(c),
                               ;             1000:1168(c),1000:1222(c),1000:1846(c),1000:26eb(c),
@@ -4058,7 +4058,7 @@ FUN_1000_2aad:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_2ad8:
+FUN_PHYSICS_2ad8:
                               ;XREF[19]:    1000:02ab(c),1000:0377(c),1000:0440(c),1000:079c(c),
                               ;             1000:07d4(c),1000:07f8(c),1000:08ad(c),1000:09bb(c),
                               ;             1000:1174(c),1000:122e(c),1000:184b(c),1000:2705(c),
@@ -4090,7 +4090,7 @@ FUN_1000_2ad8:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_2b08:
+FUN_PHYSICS_2b08:
                               ;XREF[19]:    1000:06e0(c),1000:0701(c),1000:0712(c),1000:0731(c),
                               ;             1000:078d(c),1000:07be(c),1000:0819(c),1000:0863(c),
                               ;             1000:087c(c),1000:08a5(c),1000:0907(c),1000:09b3(c),
@@ -4098,7 +4098,7 @@ FUN_1000_2b08:
                               ;             1000:4a5a(c),1000:4c64(c),1000:57c7(c)
     AND         AX,AX
     JS          .LAB_LOC_2
-    JNZ         FUN_1000_2b1f
+    JNZ         FUN_PHYSICS_2b1f
     MOV         AX,0x0
     TEST        BX,BX
     JNS         .LAB_LOC_1
@@ -4108,47 +4108,47 @@ FUN_1000_2b08:
 
 .LAB_LOC_2:
     NOT         AX
-    CALL        FUN_1000_2b1f
+    CALL        FUN_PHYSICS_2b1f
     NEG         AX
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_2b1f:
+FUN_PHYSICS_2b1f:
                               ;XREF[2]:     1000:2b0e(j),1000:2b63(c)
     AND         BX,BX
     JS          .LAB_LOC_1
-    JNZ         FUN_1000_2b2d
+    JNZ         FUN_PHYSICS_2b2d
     MOV         AX,0x4000
     RET
 
 .LAB_LOC_1:
     NOT         BX
-    CALL        FUN_1000_2b2d
+    CALL        FUN_PHYSICS_2b2d
     NEG         AX
     ADD         AX,0x8000
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_2b2d:
+FUN_PHYSICS_2b2d:
                               ;XREF[2]:     1000:2b25(j),1000:2b58(c)
     CMP         AX,BX
     JG          .LAB_LOC_1
-    JL          FUN_1000_2b3b
+    JL          FUN_PHYSICS_2b3b
     MOV         AX,0x2000
     RET
 
 .LAB_LOC_1:
     XCHG        AX,BX
-    CALL        FUN_1000_2b3b
+    CALL        FUN_PHYSICS_2b3b
     NEG         AX
     ADD         AX,0x4000
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_2b3b:
+FUN_PHYSICS_2b3b:
                               ;XREF[2]:     1000:2b33(j),1000:2b4d(c)
     MOV         DX,AX
     XOR         AX,AX
@@ -4165,7 +4165,7 @@ FUN_1000_2b3b:
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
 ;MODIFIED: now it only alocates and doesnt set vga to mode 13h
-FUN_1000_2b70:
+FUN_INIT_2b70:
                               ;XREF[1]:     1000:021c(c)
     MOV         AH,0x48
     MOV         BX,0xfa0
@@ -7588,21 +7588,21 @@ FUN_1000_47ec:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_48d0:
+FUN_PHYSICS_48d0:
                               ;XREF[1]:     1000:56ba(c)
     PUSH        SI
-    CALL        FUN_1000_4e0a
+    CALL        FUN_PHYSICS_4e0a
     POP         SI
     PUSH        SI
-    CALL        FUN_1000_48db
+    CALL        FUN_PHYSICS_48db
     POP         SI
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_48db:
+FUN_PHYSICS_48db:
                               ;XREF[1]:     1000:48d6(c)
-    CALL        FUN_1000_0e28
+    CALL        FUN_PHYSICS_0e28
     MOV         DI,SI
     ADD         DI,word [SI]
     MOV         AX,word [DI]
@@ -7619,7 +7619,7 @@ FUN_1000_48db:
     SHR         EBX,0x10
     SHR         ECX,0x10
     PUSH        CX
-    CALL        FUN_1000_532e
+    CALL        FUN_PHYSICS_532e
     POP         CX
     ADD         AX,word [DI + 0x18]
     MOV         word [0xe9c6],AX
@@ -7656,7 +7656,7 @@ FUN_1000_48db:
     INC         word [0xe9d6]
     DEC         word [0xe9d4]
     JNZ         .LAB_LOC_1
-    CALL        FUN_1000_1003
+    CALL        FUN_PHYSICS_1003
     RET
 .LAB_LOC_7:
     MOV         word [0xe9a2],0x8000
@@ -7664,7 +7664,7 @@ FUN_1000_48db:
     MOV         word [0xe9aa],0x0
     MOV         word [0xe9ae],0x7f00
     MOV         byte [0xea28],0x0
-    CALL        FUN_1000_4a71
+    CALL        FUN_PHYSICS_4a71
     JMP         .LAB_LOC_3
 .LAB_LOC_8:
     MOV         word [0xe9a2],0x0
@@ -7672,7 +7672,7 @@ FUN_1000_48db:
     MOV         word [0xe9aa],0x8000
     MOV         word [0xe9ae],0x0
     MOV         byte [0xea28],0x0
-    CALL        FUN_1000_4a71
+    CALL        FUN_PHYSICS_4a71
     JMP         .LAB_LOC_4
 .LAB_LOC_9:
     MOV         word [0xe9a2],0x7fff
@@ -7680,7 +7680,7 @@ FUN_1000_48db:
     MOV         word [0xe9aa],0x0
     MOV         word [0xe9ae],0x7fff
     MOV         byte [0xea28],0x0
-    CALL        FUN_1000_4a71
+    CALL        FUN_PHYSICS_4a71
     JMP         .LAB_LOC_5
 .LAB_LOC_10:
     MOV         word [0xe9a2],0x0
@@ -7688,7 +7688,7 @@ FUN_1000_48db:
     MOV         word [0xe9aa],0x7fff
     MOV         word [0xe9ae],0x0
     MOV         byte [0xea28],0x0
-    CALL        FUN_1000_4a71
+    CALL        FUN_PHYSICS_4a71
     JMP         .LAB_LOC_6
 .LAB_LOC_11:
     MOVZX       BX,byte [0xea28]
@@ -7707,26 +7707,26 @@ FUN_1000_48db:
 .LAB_LOC_12:
     MOV         AX, word [0xea24]
     MOV         BX,0x100
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     MOV         BX,AX
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     MOV         word [0xe9a2],AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     MOV         word [0xe9a6],AX
     MOV         AX, word [0xea26]
     MOV         BX,0x100
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     MOV         BX,AX
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     MOV         word [0xe9aa],AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     MOV         word [0xe9ae],AX
-    CALL        FUN_1000_4a71
+    CALL        FUN_PHYSICS_4a71
     JMP         .LAB_LOC_2
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_4a71:
+FUN_PHYSICS_4a71:
                               ;XREF[5]:     1000:499c(c),1000:49bf(c),1000:49e3(c),1000:4a07(c),
                               ;             1000:4a6b(c)
     MOV         EAX,dword [DI + 0x14]
@@ -7749,7 +7749,7 @@ FUN_1000_4a71:
     CMP         EBX,0xfffa0000
     JG          .LAB_LOC_1
     XOR         AX,AX
-    CALL        FUN_1000_5864
+    CALL        FUN_PHYSICS_5864
 .LAB_LOC_1:
     MOV         ECX,dword [0xe9c8]
     MOV         EAX,ECX
@@ -7802,19 +7802,19 @@ FUN_1000_4a71:
     ADD         EBX,EDX
     MOV         dword [0xe9d0],EBX
     MOV         AX, word [0xe9d6]
-    CALL        FUN_1000_0e69
+    CALL        FUN_PHYSICS_0e69
     MOV         dword [0xe9b0],EAX
     MOV         dword [0xe9b4],EBX
     MOV         dword [0xe9b8],ECX
     NEG         EDX
     MOV         dword [0xe9da],EDX
-    CALL        FUN_1000_4c26
+    CALL        FUN_PHYSICS_4c26
     MOV         word [0xe9bc],AX
     MOV         BX,AX
-    CALL        FUN_1000_2ad8
+    CALL        FUN_PHYSICS_2ad8
     SHL         EAX,0x10
     MOV         dword [0xe9c2],EAX
-    CALL        FUN_1000_2aad
+    CALL        FUN_PHYSICS_2aad
     SHL         EAX,0x10
     MOV         dword [0xe9be],EAX
     MOV         EAX, dword [0xe9da]
@@ -7825,11 +7825,11 @@ FUN_1000_4a71:
     MOV         EAX,EBX
     IMUL        dword [0xe9c2]
     SUB         dword [0xe9d0],EDX
-    CALL        FUN_1000_4d0e
+    CALL        FUN_PHYSICS_4d0e
     MOV         EBX,dword [0xe9da]
     NEG         EBX
     MOV         AX, word [0xe9d6]
-    CALL        FUN_1000_0f67
+    CALL        FUN_PHYSICS_0f67
 .LAB_LOC_3:
     RET
 .LAB_LOC_4:
@@ -7856,12 +7856,12 @@ FUN_1000_4a71:
     SHL         EDX,0x1
     ADD         EBX,EDX
     MOV         dword [0xe9d0],EBX
-    CALL        FUN_1000_4cc3
+    CALL        FUN_PHYSICS_4cc3
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_4c26:
+FUN_PHYSICS_4c26:
                               ;XREF[1]:     1000:4b88(c)
     PUSH        ECX
     PUSH        EBX
@@ -7884,12 +7884,12 @@ FUN_1000_4c26:
     IMUL        dword [0xe9a8]
     ADD         BX,DX
     MOV         AX,CX
-    CALL        FUN_1000_2b08
+    CALL        FUN_PHYSICS_2b08
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_4c68:
+FUN_PHYSICS_4c68:
                               ;XREF[2]:     1000:4cc3(c),1000:4d0e(c)
     MOV         EAX, dword [0xe9cc]
     MOV         EBX,dword [0xe9d0]
@@ -7924,12 +7924,12 @@ FUN_1000_4c68:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_4cc3:
+FUN_PHYSICS_4cc3:
                               ;XREF[1]:     1000:4c22(c)
-    CALL        FUN_1000_4c68
+    CALL        FUN_PHYSICS_4c68
     JG          .LAB_LOC_1
     PUSH        ECX
-    CALL        FUN_1000_4d96
+    CALL        FUN_PHYSICS_4d96
     POP         ECX
     MOV         EAX, dword [0xe9d0]
     CDQ
@@ -7954,12 +7954,12 @@ FUN_1000_4cc3:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_4d0e:
+FUN_PHYSICS_4d0e:
                               ;XREF[1]:     1000:4bc7(c)
-    CALL        FUN_1000_4c68
+    CALL        FUN_PHYSICS_4c68
     JG          .LAB_LOC_1
     PUSH        ECX
-    CALL        FUN_1000_4d96
+    CALL        FUN_PHYSICS_4d96
     POP         ECX
     MOV         EAX, dword [0xe9d0]
     CDQ
@@ -7997,7 +7997,7 @@ FUN_1000_4d0e:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_4d96:
+FUN_PHYSICS_4d96:
                               ;XREF[3]:     1000:4ccc(c),1000:4d17(c),1000:52b7(c)
     PUSH        SI
     MOV         SI,word [0x3e51]
@@ -8032,7 +8032,7 @@ FUN_1000_4d96:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_4e0a:
+FUN_PHYSICS_4e0a:
                               ;XREF[1]:     1000:48d1(c)
     MOV         AX,SI
     ADD         AX,word [SI]
@@ -8204,7 +8204,7 @@ FUN_1000_4e0a:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_500b:
+FUN_PHYSICS_500b:
                               ;XREF[1]:     1000:56c8(c)
     MOV         byte [0xea28],0x0
     MOV         DI,0x5bbc
@@ -8213,7 +8213,7 @@ FUN_1000_500b:
     PUSH        CX
     PUSH        DI
     MOV         SI,word [DI]
-    CALL        FUN_1000_5091
+    CALL        FUN_PHYSICS_5091
     MOV         DI,0x5bbc
     MOV         CX,word [0x5bba]
 .LAB_LOC_2:
@@ -8248,7 +8248,7 @@ FUN_1000_500b:
     JL          .LAB_LOC_3
     POP         DI
     POP         SI
-    CALL        FUN_1000_51bd
+    CALL        FUN_PHYSICS_51bd
     JMP         .LAB_LOC_4
 
  ; 1000:507f [UNDEFINED BYTES REMOVED]
@@ -8271,7 +8271,7 @@ FUN_1000_500b:
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
 ;ANALYSIS: related to colision, nop-ing it makes the cars just phase thru one another
-FUN_1000_5091:
+FUN_PHYSICS_5091:
                               ;XREF[1]:     1000:501c(c)
     PUSH        SI
     MOV         DX,SI
@@ -8382,7 +8382,7 @@ FUN_1000_5091:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_51bd:
+FUN_PHYSICS_51bd:
                               ;XREF[1]:     1000:507a(c)
     PUSH        DI
     PUSH        SI
@@ -8471,7 +8471,7 @@ FUN_1000_51bd:
     SAR         EAX,0x1
     SUB         dword [SI + 0x14],EAX
     ADD         dword [DI + 0x14],EAX
-    CALL        FUN_1000_4d96
+    CALL        FUN_PHYSICS_4d96
 .LAB_LOC_9:
     ADD         DI,0x1c
     POP         CX
@@ -8491,7 +8491,7 @@ FUN_1000_51bd:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_52d4:
+FUN_PHYSICS_52d4:
                               ;XREF[2]:     1000:5393(c),1000:53e4(c)
     MOV         AX, word [0xea0c]
     IMUL        word [0xea14]
@@ -8524,7 +8524,7 @@ FUN_1000_52d4:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_532e:
+FUN_PHYSICS_532e:
                               ;XREF[1]:     1000:4910(c)
     MOV         word [0xea1c],CX
     MOV         word [0xea0c],0x80
@@ -8556,7 +8556,7 @@ FUN_1000_532e:
     MOV         word [0xea16],AX
     MOV         word [0xea26],AX
     PUSH        CX
-    CALL        FUN_1000_52d4
+    CALL        FUN_PHYSICS_52d4
     POP         CX
     ADD         AX,CX
     JMP         .LAB_LOC_2
@@ -8586,7 +8586,7 @@ FUN_1000_532e:
     NEG         AX
     MOV         word [0xea24],AX
     PUSH        CX
-    CALL        FUN_1000_52d4
+    CALL        FUN_PHYSICS_52d4
     POP         CX
     ADD         AX,CX
 .LAB_LOC_2:
@@ -8620,18 +8620,18 @@ FUN_timer_5680:
     PUSH        DI
     PUSH        BP
     MOV         DI,BP
-    CALL        FUN_1000_0d2a
-    CALL        FUN_1000_1004
-    CALL        FUN_1000_48d0
+    CALL        FUN_PHYSICS_0d2a
+    CALL        FUN_PHYSICS_1004
+    CALL        FUN_PHYSICS_48d0
     POP         BP
     POP         DI
     POP         CX
     ADD         DI,0x2
     ADD         BP,0x6
     LOOP        .LAB_LOC_1
-    CALL        FUN_1000_500b
-    CALL        FUN_1000_0bb5
-    CALL        FUN_1000_0a3b
+    CALL        FUN_PHYSICS_500b
+    CALL        FUN_PHYSICS_0bb5
+    CALL        FUN_PHYSICS_0a3b
 .LAB_LOC_2:
     POP         GS
     POP         FS
@@ -8664,38 +8664,38 @@ FUN_keyboard_56df:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_57e0:
+FUN_INIT_57e0:
                               ;XREF[1]:     1000:022c(c)
     MOV         AX,0x120
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AX,0x800
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AX,0xbdc0
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AX,0xb000
 .LAB_LOC_1:
     PUSH        AX
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     POP         AX
     INC         AH
     CMP         AH,0xb8
     JBE         .LAB_LOC_1
     MOV         AL,0x0
     MOV         SI,0xecb8
-    CALL        FUN_1000_589b
+    CALL        FUN_SHARED_589b
     MOV         AL,0x1
     MOV         SI,0xecb8
-    CALL        FUN_1000_589b
+    CALL        FUN_SHARED_589b
     MOV         AX,0x443f
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         CX,0xf00
     MOV         AL,CL
     MOV         AH,0xa1
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AL,CH
     OR          AL,0x20
     MOV         AH,0xb1
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     ;MOV         AX, FUN_dummy_1000_588b
     RET
 
@@ -8708,12 +8708,12 @@ FUN_1000_5831:
     MOV         AL,BL
     MOV         AH,0xa0
     ADD         AH,CH
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AL,BH
     OR          AL,0x20
     MOV         AH,0xb0
     ADD         AH,CH
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AL,0x3f
     SUB         AL,CL
     CMP         AL,0x3f
@@ -8723,13 +8723,13 @@ FUN_1000_5831:
     MOV         AH,0x43
     MOVZX       BX,CH
     ADD         AH,byte [BX + CSD_DAT_unk_592c]
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     RET
 
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_5864:
+FUN_PHYSICS_5864:
                               ;XREF[1]:     1000:4abf(c)
     PUSH        SI
     PUSH        DX
@@ -8738,15 +8738,15 @@ FUN_1000_5864:
     MOV         SI,0xecd9
     ADD         SI,AX
     MOV         AX,0xb800
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AL,0x8
-    CALL        FUN_1000_589b
+    CALL        FUN_SHARED_589b
     LODSB 
     MOV         AH,0xa8
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     LODSB 
     MOV         AH,0xb8
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     POP         DX
     POP         SI
     RET
@@ -8755,59 +8755,59 @@ FUN_1000_5864:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_589b:
+FUN_SHARED_589b:
                               ;XREF[3]:     1000:5806(c),1000:580e(c),1000:5879(c)
     MOVZX       BX,AL
     MOV         BL,byte [BX + CSD_DAT_unk_592c]
     MOV         AH,0x20
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AH,0x40
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AH,0x60
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AH,0x80
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AH,0xe0
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AH,0x23
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AH,0x43
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AH,0x63
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AH,0x83
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AH,0xe3
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     MOV         AH,0xc0
     ADD         AH,BL
     LODSB 
-    CALL        FUN_1000_58fc
+    CALL        FUN_SHARED_58fc
     RET
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_58fc:
+FUN_SHARED_58fc:
                               ;XREF[21]:    1000:57e3(c),1000:57e9(c),1000:57ef(c),1000:57f6(c),
                               ;             1000:5814(c),1000:581e(c),1000:5827(c),1000:5874(c),
                               ;             1000:587f(c),1000:5885(c),1000:58a8(c),1000:58b0(c),
@@ -8906,7 +8906,7 @@ FUN_1000_5940_render_text:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_5a60:
+FUN_INIT_5a60:
                               ;XREF[3]:     1000:24ca(c),1000:24da(c),1000:2566(c)
     MOV         DX,DX
     MOV         AL,0x0
@@ -8914,14 +8914,14 @@ FUN_1000_5a60:
     call far DOS3Call
     MOV         BX,AX
     JC          .LAB_LOC_1
-    CALL        FUN_1000_5a95
+    CALL        FUN_INIT_5a95
     JC          .LAB_LOC_1
     MOV         CX,0x0
     MOV         DX,0x80
     MOV         AX,0x4200
     call far DOS3Call
     JC          .LAB_LOC_1
-    CALL        FUN_1000_5acf
+    CALL        FUN_INIT_5acf
     JC          .LAB_LOC_1
     MOV         AH,0x3e
     call far DOS3Call
@@ -8933,7 +8933,7 @@ FUN_1000_5a60:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_5a95:
+FUN_INIT_5a95:
                               ;XREF[3]:     1000:01d3(c),1000:24ec(c),1000:5a6e(c)
     MOV         DX,0xef88
     MOV         CX,0x80
@@ -8958,7 +8958,7 @@ FUN_1000_5a95:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_5acf:
+FUN_INIT_5acf:
                               ;XREF[3]:     1000:01ff(c),1000:251d(c),1000:5a84(c)
     CLD
     MOV         DX,0xf008
@@ -8980,7 +8980,7 @@ FUN_1000_5acf:
  ; 1000:5af5 [UNDEFINED BYTES REMOVED]
 
 .LAB_LOC_3:
-    CALL        FUN_1000_5b26
+    CALL        FUN_INIT_5b26
     MOV         AH,AL
     AND         AH,0xc0
     CMP         AH,0xc0
@@ -8988,7 +8988,7 @@ FUN_1000_5acf:
     JNZ         .LAB_LOC_4
     MOV         AH,AL
     AND         AH,0x3f
-    CALL        FUN_1000_5b26
+    CALL        FUN_INIT_5b26
     DEC         AH
 .LAB_LOC_4:
     CMP         CX,0x100
@@ -9005,7 +9005,7 @@ FUN_1000_5acf:
 ;************************************************************************************************
 ;*                                           FUNCTION                                           *
 ;************************************************************************************************
-FUN_1000_5b26:
+FUN_INIT_5b26:
                               ;XREF[2]:     1000:5af6(c),1000:5b0c(c)
     CMP         SI,0xf308
     JNZ         .LAB_LOC_1

@@ -1,5 +1,9 @@
 //@ts-check
 
+//This thing helps transform the ghidra generated label "LAB_1000_XXXX" into local labels
+//its not foolproof, needs some manual fixing
+
+
 import { readFile, writeFile } from 'node:fs/promises';
 
 /** @type {string} */
@@ -36,13 +40,15 @@ function entrancia(func, mark){
         if(!lm){
             continue;
         }
-
-        renames[lm[1]] = mark;
-        entrancia(lm[1], mark);
+        const fn = lm[1];
+        renames[fn] = renames[fn] || {};
+        renames[fn][mark] = true;
+        entrancia(fn, mark);
     }
 }
 
-entrancia("FUN_timer_5680", "PHYS");
+entrancia("f_init", "INIT");
+entrancia("FUN_timer_5680", "PHYSICS");
 
 
 const subs = codigos.replaceAll(/FUN_1000_\w{4}/g,function(m){
@@ -50,10 +56,14 @@ const subs = codigos.replaceAll(/FUN_1000_\w{4}/g,function(m){
     if(!mark){
         return m;
     }
-    return m.replace("1000", mark);
+    var k = Object.keys(mark);
+    if(k.length === 1){
+        return m.replace("1000", k[0]);
+    }
+    if(k.length === 2){
+        return m.replace("1000", "SHARED");
+    }
 })
-
-debugger;
 
 await writeFile("reasm/renomeadas.asm", subs);
 
