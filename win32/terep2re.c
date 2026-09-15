@@ -333,6 +333,10 @@ void prepare_bitmap_info(int w, int h, st_image *bminfo, uint8_t *palette){
 
     bminfo->info = bih;
 
+    if(palette == NULL){
+        return;
+    }
+
     uint8_t *ptr = palette;
     for(int i =0; i<256;i++){
         bminfo->palette[i].rgbRed   = ptr[0];

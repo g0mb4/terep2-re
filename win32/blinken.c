@@ -2,35 +2,27 @@
 
 #include <stdio.h>
 
-#define SETCOLORR(i,r,g,b) {                                                \
-        RGBQUAD tmp = {.rgbRed = (r), .rgbGreen = (g), .rgbBlue = (b),};    \
-        blinkenImg.palette[(i)] = tmp;                                      \
-    }
+#define SETCOLORR(i,r,g,b) {                                            \
+    RGBQUAD tmp = {.rgbRed = (r), .rgbGreen = (g), .rgbBlue = (b),};    \
+    blinkenImg.palette[(i)] = tmp;                                      \
+}
 
 st_image blinkenImg;
 extern volatile uintptr_t all_segments[];
 extern int started;
 
 void blinkenInit(void){
-    srand(0);   // NOTE(gmb): ensure same colors
-    uint8_t pRandom[256*3];
-    for(int i =0; i < 256*3; i++){
-        pRandom[i] = rand() & 0xFF;
+    prepare_bitmap_info(256, 256, &blinkenImg, NULL);
+
+    for(int i =0; i < 256; i++){
+        //TODO find a better formula
+        int r = (i * 4)  & 0xFF;
+        int g = (i * 2)  & 0xFF;;
+        int b = (i * 16)  & 0xFF;
+        SETCOLORR(i, r, g, b);    
     }
 
-    prepare_bitmap_info(256, 256, &blinkenImg, pRandom);
-
     SETCOLORR(0, 0,     0,   0);
-    SETCOLORR(1, 255,   0,   0);
-    SETCOLORR(2, 255, 128,   0);
-    SETCOLORR(3, 0,   255, 255);
-
-    SETCOLORR(126, 255, 255,   0);
-    SETCOLORR(127,   0,   0, 255);
-    SETCOLORR(128,   0, 255,   0);
-    SETCOLORR(129, 128,   0, 255);
-
-    SETCOLORR(254, 255,   0, 255);
     SETCOLORR(255, 255, 255, 255);
 }
 
