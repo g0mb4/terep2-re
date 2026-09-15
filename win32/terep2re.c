@@ -8,7 +8,7 @@
 #define DEFAULT_LEN (1 << 16)
 
 typedef struct {
-    uint16_t ax, bx, cx, dx, cf;
+    uint16_t ax, bx, cx, dx, ok;
     uint16_t _alignment;
     uint32_t caller;
 } call_portal_t;
@@ -399,7 +399,7 @@ void call_init(HWND hwnd, char path[], int complain){
 void mydoscall(){
     char *path = tmp_g_path;
     int ok = innermydoscall(path);
-    call_portal->cf = ok ? 3 : 1;
+    call_portal->ok = ok;
 }
 
 int innermydoscall(char path[]){

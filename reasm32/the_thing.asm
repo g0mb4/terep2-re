@@ -35,7 +35,7 @@ call_portal:
     .bxr: dw 0
     .cxr: dw 0
     .dxr: dw 0
-    .cfs: dw 0
+    .ok: dw 0
     dw 0 ; alignment
     .caller: dd 0
 
@@ -46,15 +46,16 @@ call_portal:
     global _all_segments
     global _base_mem
 %else
-    global data_callregs
+    global call_portal
     global all_segments
     global base_mem
 %endif
 
 section .text
 
+extern _mydoscall
+
 %ifdef WIN32
-    extern _mydoscall
     global _asm_f_init
     global _asm_render
     global _asm_physics
@@ -100,8 +101,13 @@ DOS3Call:
     MOV BX, [call_portal.bxr]
     MOV CX, [call_portal.cxr]
     MOV DX, [call_portal.dxr]
-    CMP word [call_portal.cfs], 2 ; 1 to activate the cf, above 2 to clear it
+    CMP word [call_portal.ok], 0
+    JE .deu_ruim
+    CLC
+    ret
 
+    .deu_ruim:
+    STC
     ret
 
 
