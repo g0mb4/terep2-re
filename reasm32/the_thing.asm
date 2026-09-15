@@ -54,11 +54,11 @@ call_portal:
 section .text
 
 %ifdef WIN32
-    extern mydoscall_
-    global asm_f_init_
-    global asm_render_
-    global asm_physics_
-    global asm_keys_
+    extern _mydoscall
+    global _asm_f_init
+    global _asm_render
+    global _asm_physics
+    global _asm_keys
 %else
     global asm_f_init
     global asm_render
@@ -84,12 +84,12 @@ DOS3Call:
     TEST ESP, 0x3
     JNZ .desalinhado
 
-    call mydoscall_
+    call _mydoscall
     JMP .end
 
     .desalinhado:
         SUB ESP, 2
-        CALL mydoscall_
+        CALL _mydoscall
         ADD ESP, 2
 
     .end:
@@ -106,7 +106,7 @@ DOS3Call:
 
 
 asm_f_init:
-asm_f_init_:
+_asm_f_init:
     airlock_prologue
 
     mov dword [all_segments], base_mem
@@ -120,7 +120,7 @@ asm_f_init_:
     ret
 
 asm_render:
-asm_render_:
+_asm_render:
     airlock_prologue
 
     call FUN_main_render
@@ -130,7 +130,7 @@ asm_render_:
 
 
 asm_physics:
-asm_physics_:
+_asm_physics:
     airlock_prologue
 
     call FUN_timer_5680
@@ -139,7 +139,7 @@ asm_physics_:
     ret
 
 asm_keys:
-asm_keys_:
+_asm_keys:
     airlock_prologue
 
     ;TODO get keys from the window
