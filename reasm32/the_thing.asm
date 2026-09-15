@@ -142,7 +142,7 @@ asm_keys:
 _asm_keys:
     airlock_prologue
 
-    ;TODO get keys from the window
+    MOV AX, [call_portal.axr]
     call FUN_keyboard_56df
 
     airlock_epilogue

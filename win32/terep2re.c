@@ -18,7 +18,7 @@ TCHAR szAppName[] = "Terep2Win32";
 extern void asm_f_init(void);
 extern void asm_render(void);
 extern void asm_physics(void);
-extern void asm_keys(uint16_t);
+extern void asm_keys(void);
 
 void mydoscall(void);
 int innermydoscall(char path[]);
@@ -221,7 +221,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             }
 
             if(started){
-                asm_keys(scanCode);
+                call_portal->ax = scanCode;
+                asm_keys();
             }
         }
         break;
