@@ -206,6 +206,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         break;
 
         case WM_KEYDOWN:
+        {
+            if(wParam == VK_SPACE && !run_physics){
+                asm_physics();
+            }
+            if(wParam == 0x33){// key 3
+                run_physics = !run_physics;
+            }
+            
+            //no break here, intentional fallthrou
+        }
         case WM_KEYUP:
         case WM_SYSKEYDOWN:
         case WM_SYSKEYUP:
