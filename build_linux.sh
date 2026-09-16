@@ -1,3 +1,5 @@
+#!/bin/bash
+
 cd reasm32
     nasm -f elf32 the_thing.asm
 cd ..
