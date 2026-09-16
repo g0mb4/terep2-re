@@ -4,12 +4,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <shlobj.h>
-#include <process.h>
 
 #define DEFAULT_LEN (1 << 16)
 
 typedef struct {
-    uint16_t msg, ax, bx, cx, dx, cf;
+    uint16_t ax, bx, cx, dx, ok;
+    uint16_t _alignment;
+    uint32_t caller;
 } call_portal_t;
 
 TCHAR szAppName[] = "Terep2Win32";
@@ -17,9 +18,10 @@ TCHAR szAppName[] = "Terep2Win32";
 extern void asm_f_init(void);
 extern void asm_render(void);
 extern void asm_physics(void);
-extern void asm_keys(uint16_t);
+extern void asm_keys(void);
 
-int mydoscall(char path[]);
+void mydoscall(void);
+int innermydoscall(char path[]);
 void call_init(HWND hwnd, char path[], int complain);
 
 extern volatile uintptr_t all_segments[];
@@ -204,6 +206,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         break;
 
         case WM_KEYDOWN:
+        {
+            if(wParam == VK_SPACE && !run_physics){
+                asm_physics();
+            }
+            if(wParam == '3'){
+                run_physics = !run_physics;
+            }
+            
+            //no break here, intentional fallthrou
+        }
         case WM_KEYUP:
         case WM_SYSKEYDOWN:
         case WM_SYSKEYUP:
@@ -219,7 +231,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             }
 
             if(started){
-                asm_keys(scanCode);
+                call_portal->ax = scanCode;
+                asm_keys();
             }
         }
         break;
@@ -330,6 +343,10 @@ void prepare_bitmap_info(int w, int h, st_image *bminfo, uint8_t *palette){
 
     bminfo->info = bih;
 
+    if(palette == NULL){
+        return;
+    }
+
     uint8_t *ptr = palette;
     for(int i =0; i<256;i++){
         bminfo->palette[i].rgbRed   = ptr[0];
@@ -339,11 +356,7 @@ void prepare_bitmap_info(int w, int h, st_image *bminfo, uint8_t *palette){
     }
 }
 
-void __watcall GameInitThread(void *param) {
-    (void)param;
-    asm_f_init();
-    _endthread();
-}
+char *tmp_g_path;
 
 void call_init(HWND hwnd, char path[], int complain){
     {
@@ -359,34 +372,12 @@ void call_init(HWND hwnd, char path[], int complain){
         fclose(f);
     }
 
-    uintptr_t handle = _beginthread(GameInitThread, 0, 0);
-
-    if (handle == (uintptr_t)-1) {
-        MessageBox(NULL, "Error initializing", "Error", MB_ICONERROR);
-        exit(1);
-    }
+    tmp_g_path = path;
+    asm_f_init();
+    tmp_g_path = 0;
 
     started = 1;
-    int64_t ini = GetTimeee();
-
-    while(1){
-        if(call_portal->msg == 0xd3ca){
-            int ok = mydoscall(path);
-
-            call_portal->cf = ok ? 3 : 1;
-            call_portal->msg = 0x1234;
-            continue;
-        }
-        if(call_portal->msg == 0xbeef){
-            break;
-        }
-
-        int64_t end = GetTimeee();
-        if(end - ini > 2000000LL){ //2 seconds is all we need
-            MessageBox(NULL, "Loading took too long", "Error", MB_ICONERROR);
-            exit(1);
-        }
-    }
+    
 
     if(call_portal->ax){
         MessageBox(NULL, "Init reported some kind of error", "Bad", MB_ICONERROR);
@@ -405,7 +396,13 @@ void call_init(HWND hwnd, char path[], int complain){
     SetTimer(hwnd, 122, 1000/HZ_DISPLAY, NULL);
 }
 
-int mydoscall(char path[]){
+void mydoscall(){
+    char *path = tmp_g_path;
+    int ok = innermydoscall(path);
+    call_portal->ok = ok;
+}
+
+int innermydoscall(char path[]){
     uint16_t ax = call_portal->ax;
     uint16_t bx = call_portal->bx;
     uint16_t cx = call_portal->cx;
@@ -419,6 +416,8 @@ int mydoscall(char path[]){
     
     if (op == 0x3d00){
         //open
+        printf("* OPEN syscall called at EIP: %08x  \n", call_portal->caller);
+
         volatile char *filename = &base_mem[dx];
         if(filename[0] == 0){
             //empty file name, happens when track has 5 cars
@@ -449,7 +448,7 @@ int mydoscall(char path[]){
         seletor++;
         void* mem = malloc(DEFAULT_LEN);
         all_segments[seletor] = (uintptr_t)mem;
-        printf("* Aloc: %d, %08x\n", seletor, mem);
+        printf("* Aloc: %d, %08x, called at EIP: %08x\n", seletor, mem, call_portal->caller);
         printf("* game asked for %d paragraphs (%d bytes), we gave it a %d bytes block anyway\n", bx, bx * 16, DEFAULT_LEN);
         call_portal->ax = seletor;
         return 1;
@@ -463,6 +462,7 @@ int mydoscall(char path[]){
         int32_t r = fread((void*)addr, 1, cx, f);
         if(dx != 0xf008){
             //show this message only for carX.dat loading
+            printf("* READ syscall called at EIP: %08x  \n", call_portal->caller);
             printf("* Read %ld bytes into address: %08x (%04x relative to DS)!\n", r, addr, dx);
         }
         if(r != cx){
@@ -486,7 +486,7 @@ int mydoscall(char path[]){
     if (op == 0x3e00){
         int ok = fclose(f);
         f = NULL;
-        printf("* Total read: %ld\n", totalrd);
+        printf("* Total read: %ld\n=====================\n", totalrd);
         totalrd = 0;
         return ok == 0;
     }
@@ -494,6 +494,7 @@ int mydoscall(char path[]){
     char error[256];
 
     snprintf(error, 256, "\nERROR: unhandled call: %04x\n", ax);
+    printf("* UNKNOWN syscall called at EIP: %08x  \n", call_portal->caller);
 
     printf("\n%s\n", error);
     MessageBox(NULL, error, "Error", MB_ICONERROR);

@@ -25,14 +25,22 @@
 
 #define DEFAULT_LEN (1 << 16)
 
+typedef struct {
+    uint16_t ax, bx, cx, dx, ok;
+    uint16_t _alignment;
+    uint32_t caller;
+} call_portal_t;
+
 extern "C" void asm_f_init();
 extern "C" void asm_render();
 extern "C" void asm_physics();
-extern "C" void asm_keys(int16_t);
+extern "C" void asm_keys();
 
 extern volatile uint32_t all_segments[];
-extern volatile uint16_t data_callregs[]; //TODO portal struct
-extern volatile uint16_t base_mem[];
+extern volatile call_portal_t call_portal[];
+extern volatile uint8_t base_mem[];
+
+extern "C" void _mydoscall();
 
 
 std::string basedir;
@@ -98,30 +106,9 @@ bool doscall(void* mem, volatile uint16_t &ax, volatile uint16_t &bx, volatile u
     return false;
 }
 
-void call_init(void *datamem, volatile uint16_t* datawindow){
-    std::thread ch([](){
-        asm_f_init();
-    });
-
-    while(1){
-        if(datawindow[0] == 0xd3ca){
-            auto ok = doscall(datamem, datawindow[1], datawindow[2], datawindow[3], datawindow[4]);
-
-            datawindow[5] = ok ? 3 : 1;
-            datawindow[0] = 0x1234;
-            continue;
-        }
-        if(datawindow[0] == 0xbeef){
-            break;
-        }
-        //TODO some kind of timeout
-    }
-
-    printf("init ");
-    
-    ch.join();
-
-    printf("ended!\n");
+void _mydoscall(){
+    auto ok = doscall((void *)base_mem, call_portal->ax, call_portal->bx, call_portal->cx, call_portal->dx);
+    call_portal->ok = ok;
 }
 
 int main(int argc, char **argv){
@@ -131,13 +118,9 @@ int main(int argc, char **argv){
         basedir = argv[1];
     }
 
-    //strcpy(&((char*)datamem)[0xf700], "GAMBIARRA FOREVER 32!");
-
-    
-
     printf("lets go\n");
 
-    call_init(datamem, data_callregs);
+    asm_f_init();
 
     auto videoSegSel = ((uint16_t *)datamem)[0xdb10 / 2];
     auto videoSeg = (uint8_t*)all_segments[videoSegSel];
@@ -182,7 +165,8 @@ int main(int argc, char **argv){
             if(e.type == SDL_EVENT_KEY_DOWN || e.type == SDL_EVENT_KEY_UP){
                 auto ec = get_pc_scancode(e);
                 if(ec != 0){
-                    asm_keys(ec);
+                    call_portal->ax=ec;
+                    asm_keys();
                 }
             }
         }

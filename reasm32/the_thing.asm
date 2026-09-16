@@ -27,15 +27,17 @@ all_segments:
     times 256 dd 0
 
 
+;this call portal exists so we can comunicate with the C side without caring about calling conventions
+align 4
 _call_portal:
-data_callregs:
 call_portal:
-    .msg: dw 0
     .axr: dw 0
     .bxr: dw 0
     .cxr: dw 0
     .dxr: dw 0
-    .cfs: dw 0
+    .ok: dw 0
+    dw 0 ; alignment
+    .caller: dd 0
 
 ;TODO guard value
 
@@ -44,18 +46,20 @@ call_portal:
     global _all_segments
     global _base_mem
 %else
-    global data_callregs
+    global call_portal
     global all_segments
     global base_mem
 %endif
 
 section .text
 
+extern _mydoscall
+
 %ifdef WIN32
-    global asm_f_init_
-    global asm_render_
-    global asm_physics_
-    global asm_keys_
+    global _asm_f_init
+    global _asm_render
+    global _asm_physics
+    global _asm_keys
 %else
     global asm_f_init
     global asm_render
@@ -68,32 +72,41 @@ section .text
 
 
 DOS3Call:
+    PUSH dword [ESP]
+    POP  dword [call_portal.caller]
+
     MOV [call_portal.axr], AX
     MOV [call_portal.bxr], BX
     MOV [call_portal.cxr], CX
     MOV [call_portal.dxr], DX
 
-    ;this need to be writen last
-    ;there is actually a small but non-zero chance of the function in the C code getting called in-between the MOVs otherwise
-    MOV word [call_portal.msg], 0xd3ca
+    PUSHAD
 
-    .mloop:
-      ;busy wait until the C side does its thing
-      pause
-      cmp word [call_portal.msg], 0xd3ca
-    jz .mloop
+    MOV EBP, ESP
+    ;align the stack
+    AND ESP, -4
+
+    call _mydoscall
+    MOV ESP, EBP
+
+    POPAD
 
     MOV AX, [call_portal.axr]
     MOV BX, [call_portal.bxr]
     MOV CX, [call_portal.cxr]
     MOV DX, [call_portal.dxr]
-    CMP word [call_portal.cfs], 2 ; 1 to activate the cf, above 2 to clear it
+    CMP word [call_portal.ok], 0
+    JE .deu_ruim
+    CLC
+    ret
 
+    .deu_ruim:
+    STC
     ret
 
 
 asm_f_init:
-asm_f_init_:
+_asm_f_init:
     airlock_prologue
 
     mov dword [all_segments], base_mem
@@ -102,13 +115,12 @@ asm_f_init_:
     call f_init
 
     MOV word [call_portal.axr],  AX
-    MOV word [call_portal.msg], 0xbeef
 
     airlock_epilogue
     ret
 
 asm_render:
-asm_render_:
+_asm_render:
     airlock_prologue
 
     call FUN_main_render
@@ -118,7 +130,7 @@ asm_render_:
 
 
 asm_physics:
-asm_physics_:
+_asm_physics:
     airlock_prologue
 
     call FUN_timer_5680
@@ -127,10 +139,10 @@ asm_physics_:
     ret
 
 asm_keys:
-asm_keys_:
+_asm_keys:
     airlock_prologue
 
-    ;TODO get keys from the window
+    MOV AX, [call_portal.axr]
     call FUN_keyboard_56df
 
     airlock_epilogue
