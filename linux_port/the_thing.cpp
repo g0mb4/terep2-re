@@ -106,42 +106,9 @@ bool doscall(void* mem, volatile uint16_t &ax, volatile uint16_t &bx, volatile u
     return false;
 }
 
-volatile int sinal = 0;
-
 void _mydoscall(){
-    sinal = 0xd3ca;
-    //FIXME we just transfered the busy loop here, must fix!
-    while (sinal == 0xd3ca) {
-    
-    }
-}
-
-void call_init(void *datamem){
-    std::thread ch([](){
-        asm_f_init();
-        sinal = 0xbeef;
-    });
-
-    while(1){
-        
-        if(sinal == 0xd3ca){
-            auto ok = doscall(datamem, call_portal->ax, call_portal->bx, call_portal->cx, call_portal->dx);
-
-            call_portal->ok = ok;
-            sinal = 0x1234;
-            continue;
-        }
-        if(sinal == 0xbeef){
-            break;
-        }
-        //TODO some kind of timeout
-    }
-
-    printf("init ");
-    
-    ch.join();
-
-    printf("ended!\n");
+    auto ok = doscall((void *)base_mem, call_portal->ax, call_portal->bx, call_portal->cx, call_portal->dx);
+    call_portal->ok = ok;
 }
 
 int main(int argc, char **argv){
@@ -151,13 +118,9 @@ int main(int argc, char **argv){
         basedir = argv[1];
     }
 
-    //strcpy(&((char*)datamem)[0xf700], "GAMBIARRA FOREVER 32!");
-
-    
-
     printf("lets go\n");
 
-    call_init(datamem);
+    asm_f_init();
 
     auto videoSegSel = ((uint16_t *)datamem)[0xdb10 / 2];
     auto videoSeg = (uint8_t*)all_segments[videoSegSel];
