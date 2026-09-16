@@ -1,6 +1,7 @@
 #include "common.h"
 #include "resource.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <shlobj.h>
@@ -502,4 +503,7 @@ int innermydoscall(char path[]){
     return 0;
 }
 
-
+void adlib_callback(){
+    uint16_t ax = call_portal->ax;
+    printf("ADLIB callback called: %04x\n", ax);
+}
