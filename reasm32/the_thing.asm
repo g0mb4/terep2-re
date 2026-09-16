@@ -27,9 +27,9 @@ all_segments:
     times 256 dd 0
 
 
+;this call portal exists so we can comunicate with the C side without caring about calling conventions
 align 4
 _call_portal:
-data_callregs:
 call_portal:
     .axr: dw 0
     .bxr: dw 0
@@ -82,18 +82,12 @@ DOS3Call:
 
     PUSHAD
 
-    TEST ESP, 0x3
-    JNZ .desalinhado
+    MOV EBP, ESP
+    ;align the stack
+    AND ESP, -4
 
     call _mydoscall
-    JMP .end
-
-    .desalinhado:
-        SUB ESP, 2
-        CALL _mydoscall
-        ADD ESP, 2
-
-    .end:
+    MOV ESP, EBP
 
     POPAD
 
