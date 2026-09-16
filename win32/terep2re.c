@@ -210,7 +210,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             if(wParam == VK_SPACE && !run_physics){
                 asm_physics();
             }
-            if(wParam == 0x33){// key 3
+            if(wParam == '3'){
                 run_physics = !run_physics;
             }
             

@@ -1,5 +1,4 @@
-#ifndef COMMON_H
-#define COMMON_H
+#pragma once
 
 #include <windows.h>
 #include <stdint.h>
@@ -14,4 +13,3 @@ void blinkenInit(void);
 
 LRESULT CALLBACK BlinkenWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-#endif // COMMON_H
