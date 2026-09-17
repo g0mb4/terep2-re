@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <shlobj.h>
 
+#include <mmsystem.h>
+#include "opl3.h"
+
 #define DEFAULT_LEN (1 << 16)
 
 typedef struct {
@@ -43,6 +46,20 @@ int started = 0;
 int run_physics = 1;
 int64_t last_p_update = -1;
 
+opl3_chip chip;
+
+#define OPL3_SAMPLE_RATE        49716
+#define SOUND_CHANNELS          2
+#define SOUND_BUFFER_SIZE_CH    2048
+
+HWAVEOUT hWaveOut;
+WAVEHDR waveHeaders[SOUND_CHANNELS] = { 0 };
+int16_t audioBuffers[SOUND_CHANNELS][SOUND_BUFFER_SIZE_CH] = { 0 };
+#define SOUND_VOLUME_MAX    0xFFFFFFFF
+#define SOUND_VOLUME_MIN    0x0
+
+int sound_enabled = 1;
+
 //get system uptime in uSecs
 int64_t GetTimeee(void){
     LARGE_INTEGER t;
@@ -79,6 +96,17 @@ static void DestroyDebugConsole(void) {
 }
 #endif // DEBUGMENU
 
+void CALLBACK waveOutProc(HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) {
+    if (uMsg == WOM_DONE) {
+        WAVEHDR* pHeader = (WAVEHDR*)dwParam1;
+        int16_t* samples = (int16_t*)pHeader->lpData;
+        for (int i = 0; i < SOUND_BUFFER_SIZE_CH / 2; i++) {
+            OPL3_GenerateResampled(&chip, &samples[i * 2]);
+        }
+        waveOutWrite(hwo, pHeader, sizeof(WAVEHDR));
+    }
+}
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     HMENU hMenu;
 
@@ -89,11 +117,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 #endif
             hMenu = GetMenu(hwnd);
 
-            if (run_physics) {
-                CheckMenuItem (hMenu, T2_APP_PHYS_RUN, MF_CHECKED) ;
-            } else {
-                CheckMenuItem (hMenu, T2_APP_PHYS_RUN, MF_UNCHECKED) ;
-            }
+            CheckMenuItem(hMenu, T2_APP_PHYS_RUN, run_physics ? MF_CHECKED : MF_UNCHECKED);
+            CheckMenuItem(hMenu, T2_APP_SOUND, sound_enabled ? MF_CHECKED : MF_UNCHECKED);
 
             call_init(hwnd, ".", 0);
         }
@@ -137,11 +162,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 case T2_APP_PHYS_RUN: {
                     run_physics = !run_physics;
 
-                    if (run_physics) {
-                        CheckMenuItem(hMenu, T2_APP_PHYS_RUN, MF_CHECKED);
-                    } else {
-                        CheckMenuItem(hMenu, T2_APP_PHYS_RUN, MF_UNCHECKED);
-                    }
+                    CheckMenuItem(hMenu, T2_APP_PHYS_RUN, run_physics ? MF_CHECKED : MF_UNCHECKED);
 
                     last_p_update = -1; //pretends we just started
                 }
@@ -154,6 +175,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                         } else {
                            asm_physics();
                         }
+                    }
+                }
+                break;
+
+                case T2_APP_SOUND: {
+                    sound_enabled = !sound_enabled;
+
+                    CheckMenuItem(hMenu, T2_APP_SOUND, sound_enabled ? MF_CHECKED : MF_UNCHECKED);
+
+                    if (sound_enabled) {
+                        waveOutSetVolume(hWaveOut, SOUND_VOLUME_MAX);
+                    } else {
+                        waveOutSetVolume(hWaveOut, SOUND_VOLUME_MIN);
                     }
                 }
                 break;
@@ -270,6 +304,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_DESTROY:
         {
+            waveOutReset(hWaveOut);
+            for (int i = 0; i < SOUND_CHANNELS; i++) {
+                waveOutUnprepareHeader(hWaveOut, &waveHeaders[i], sizeof(WAVEHDR));
+            }
+            waveOutClose(hWaveOut);
+
 #ifdef DEBUGMENU
             DestroyDebugConsole();
 #endif
@@ -285,6 +325,35 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow) {
     (void)hPrev;
     (void)lpCmd;
 
+    // init sound
+    OPL3_Reset(&chip, OPL3_SAMPLE_RATE);
+
+    WAVEFORMATEX wfx;
+    wfx.wFormatTag = WAVE_FORMAT_PCM;
+    wfx.nChannels = SOUND_CHANNELS;
+    wfx.nSamplesPerSec = OPL3_SAMPLE_RATE;
+    wfx.wBitsPerSample = 16;
+    wfx.nBlockAlign = wfx.nChannels * (wfx.wBitsPerSample / 8);
+    wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
+    wfx.cbSize = 0;
+
+    MMRESULT mmerr = waveOutOpen(&hWaveOut, WAVE_MAPPER, &wfx, (DWORD_PTR)waveOutProc, 0, CALLBACK_FUNCTION);
+    if (mmerr != MMSYSERR_NOERROR) {
+        MessageBox(NULL, "Failed to open waveOut audio device!", szAppName, MB_ICONERROR);
+        return 0;
+    }
+
+    for (int i = 0; i < SOUND_CHANNELS; i++) {
+        waveHeaders[i].lpData = (LPSTR)audioBuffers[i];
+        waveHeaders[i].dwBufferLength = sizeof(audioBuffers[i]);
+        waveHeaders[i].dwFlags = 0;
+        waveHeaders[i].dwLoops = 0;
+
+        waveOutPrepareHeader(hWaveOut, &waveHeaders[i], sizeof(WAVEHDR));
+        waveOutWrite(hWaveOut, &waveHeaders[i], sizeof(WAVEHDR)); // Kick off stream
+    }
+
+    // init windows
     WNDCLASS wndclassMain = {0};
     WNDCLASS wndclassBlinken = {0};
     MSG msg;
@@ -297,7 +366,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow) {
     wndclassMain.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 
     if (!RegisterClass (&wndclassMain)){
-        MessageBox(NULL, "This program requires Windows NT!", szAppName, MB_ICONERROR) ;
+        MessageBox(NULL, "This program requires Windows NT!", szAppName, MB_ICONERROR);
         return 0;
     }
 
@@ -538,5 +607,8 @@ int innermydoscall(char path[]){
 
 void adlib_callback(){
     uint16_t ax = call_portal->ax;
-    printf("ADLIB callback called: %04x\n", ax);
+    uint8_t reg = ax >> 8;
+    uint8_t val = ax & 0xFF;
+
+    OPL3_WriteReg(&chip, reg, val);
 }
