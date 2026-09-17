@@ -52,11 +52,41 @@ int64_t GetTimeee(void){
     return ret;
 }
 
+#ifdef DEBUGMENU
+static char console_tilte[] = TEXT("TeREp2 - Debug Console");
+static void CreateDebugConsole(void) {
+        BOOL ok;
+        FILE *stream;
+
+        ok = AllocConsole();
+        if (!ok)
+            return;
+
+        AttachConsole(GetCurrentProcessId());
+        SetConsoleTitle(console_tilte);
+        freopen_s(&stream, "CON", "w", stdout);
+
+        printf(" Debug Console for TeREp2\n\n");
+}
+
+static void DestroyDebugConsole(void) {
+        FreeConsole();
+
+        HWND hwnd = FindWindow(NULL, console_tilte);
+        if (hwnd) {
+            PostMessage(hwnd, WM_CLOSE, 0, 0);
+        }
+}
+#endif // DEBUGMENU
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     HMENU hMenu;
 
     switch (msg) {
         case WM_CREATE: {
+#ifdef DEBUGMENU
+            CreateDebugConsole();
+#endif
             hMenu = GetMenu(hwnd);
 
             if (run_physics) {
@@ -214,7 +244,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             if(wParam == '3'){
                 run_physics = !run_physics;
             }
-            
+
             //no break here, intentional fallthrou
         }
         case WM_KEYUP:
@@ -240,6 +270,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_DESTROY:
         {
+#ifdef DEBUGMENU
+            DestroyDebugConsole();
+#endif
             PostQuitMessage(0);
         }
     }
@@ -313,7 +346,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow) {
                         rc.right - rc.left,
                         rc.bottom - rc.top,
                         NULL, NULL, hInst, NULL);
-                        
+
     if (hBlinken == NULL) {
         MessageBox(NULL, "Unable to create blinken window.", szAppName, MB_ICONERROR);
         return 0;
@@ -378,7 +411,7 @@ void call_init(HWND hwnd, char path[], int complain){
     tmp_g_path = 0;
 
     started = 1;
-    
+
 
     if(call_portal->ax){
         MessageBox(NULL, "Init reported some kind of error", "Bad", MB_ICONERROR);
@@ -414,7 +447,7 @@ int innermydoscall(char path[]){
     static int32_t totalrd = 0;
 
     int op = ax & 0xff00;
-    
+
     if (op == 0x3d00){
         //open
         printf("* OPEN syscall called at EIP: %08x  \n", call_portal->caller);
@@ -441,7 +474,7 @@ int innermydoscall(char path[]){
             printf("OK\n");
             fidx++;
             call_portal->ax = fidx;
-        }            
+        }
         return f != NULL;
     }
     if (op == 0x4800){
@@ -470,7 +503,7 @@ int innermydoscall(char path[]){
             printf("* Short read, %d, %d\n", r, cx);
         }
         totalrd += r;
-        call_portal->ax = r;            
+        call_portal->ax = r;
         return r >= 0;
     }
     if (op == 0x4200){
@@ -482,7 +515,7 @@ int innermydoscall(char path[]){
         uint32_t offset = ftell(f);
         call_portal->dx = offset >> 16;
         call_portal->ax = offset;
-        return fsok == 0; 
+        return fsok == 0;
     }
     if (op == 0x3e00){
         int ok = fclose(f);
