@@ -304,11 +304,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_DESTROY:
         {
+            // TODO (gmb): application does not terminates when this is here
+            //             find a place for cleanup
+/*
             waveOutReset(hWaveOut);
             for (int i = 0; i < SOUND_CHANNELS; i++) {
                 waveOutUnprepareHeader(hWaveOut, &waveHeaders[i], sizeof(WAVEHDR));
             }
             waveOutClose(hWaveOut);
+*/
 
 #ifdef DEBUGMENU
             DestroyDebugConsole();
@@ -343,6 +347,12 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow) {
         return 0;
     }
 
+    if (sound_enabled) {
+        waveOutSetVolume(hWaveOut, SOUND_VOLUME_MAX);
+    } else {
+        waveOutSetVolume(hWaveOut, SOUND_VOLUME_MIN);
+    }
+
     for (int i = 0; i < SOUND_CHANNELS; i++) {
         waveHeaders[i].lpData = (LPSTR)audioBuffers[i];
         waveHeaders[i].dwBufferLength = sizeof(audioBuffers[i]);
@@ -350,7 +360,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow) {
         waveHeaders[i].dwLoops = 0;
 
         waveOutPrepareHeader(hWaveOut, &waveHeaders[i], sizeof(WAVEHDR));
-        waveOutWrite(hWaveOut, &waveHeaders[i], sizeof(WAVEHDR)); // Kick off stream
+        waveOutWrite(hWaveOut, &waveHeaders[i], sizeof(WAVEHDR));
     }
 
     // init windows
