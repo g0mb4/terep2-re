@@ -26,7 +26,7 @@ i686-w64-mingw32-gcc \
     -I./3rd-party/Nuked-OPL3 \
     reasm32/the_thing.obj \
     3rd-party/Nuked-OPL3/opl3.c \
-    win32/{terep2re,fakedoscall,graphics}.c      \
+    win32/{terep2re,fakedoscall,graphics,sound}.c      \
     ${BLINKEN_SRC}        \
     win32/menu.o          \
     -lole32 -lwinmm -o build/terep2re32.exe

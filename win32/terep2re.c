@@ -6,11 +6,13 @@
 #include <stdio.h>
 #include <shlobj.h>
 
-#include <mmsystem.h>
-#include "opl3.h"
-
-
 TCHAR szAppName[] = "Terep2Win32";
+
+#ifdef DEBUGMENU
+    char iniFile[] = "TEREP2RED.INI";
+#else
+    char iniFile[] = "TEREP2RE.INI";
+#endif
 
 extern void asm_f_init(void);
 extern void asm_render(void);
@@ -38,19 +40,9 @@ int started = 0;
 int run_physics = 1;
 int64_t last_p_update = -1;
 
-opl3_chip chip;
-
-#define OPL3_SAMPLE_RATE        49716
-#define SOUND_CHANNELS          2
-#define SOUND_BUFFER_SIZE_CH    2048
-
-HWAVEOUT hWaveOut;
-WAVEHDR waveHeaders[SOUND_CHANNELS] = { 0 };
-int16_t audioBuffers[SOUND_CHANNELS][SOUND_BUFFER_SIZE_CH] = { 0 };
-#define SOUND_VOLUME_MAX    0xFFFFFFFF
-#define SOUND_VOLUME_MIN    0x0
-
+char last_opened_dir[MAX_PATH] = "C://";
 int sound_enabled = 1;
+int selected_scale = T2_SCALE_P2;
 
 //get system uptime in uSecs
 int64_t GetTimeee(void){
@@ -88,19 +80,76 @@ static void DestroyDebugConsole(void) {
 }
 #endif // DEBUGMENU
 
-void CALLBACK waveOutProc(HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2) {
-    if (uMsg == WOM_DONE) {
-        WAVEHDR* pHeader = (WAVEHDR*)dwParam1;
-        int16_t* samples = (int16_t*)pHeader->lpData;
-        for (int i = 0; i < SOUND_BUFFER_SIZE_CH / 2; i++) {
-            OPL3_GenerateResampled(&chip, &samples[i * 2]);
-        }
-        waveOutWrite(hwo, pHeader, sizeof(WAVEHDR));
+static void LoadConfig(void){
+    DWORD cwd_len = GetCurrentDirectory(0, NULL);
+    char *cwd = calloc(1, cwd_len);
+    if (!cwd) {
+        printf("ERROR: unable to create cwd\n");
+        return;
     }
+    GetCurrentDirectory(cwd_len, cwd);
+    DWORD path_len = cwd_len + 1 + strlen(iniFile) + 1;
+    char *path = calloc(1, path_len);
+     if (!path) {
+        printf("ERROR: unable to create path\n");
+        return;
+    }
+    snprintf(path, path_len, "%s/%s", cwd, iniFile); 
+
+    GetPrivateProfileString("Path", "Directory", "C://", last_opened_dir, sizeof(last_opened_dir), path);
+    sound_enabled = GetPrivateProfileInt("Sound", "Enabled", sound_enabled, path);
+    selected_scale = GetPrivateProfileInt("Graphics", "Scale", selected_scale, path);
+#ifdef DEBUGMENU
+    run_physics = GetPrivateProfileInt("Debug", "RunPhysics", run_physics, path);
+#endif // DEBUGMENU
+}
+
+static void SaveConfig(void){
+    DWORD cwd_len = GetCurrentDirectory(0, NULL);
+    char *cwd = calloc(1, cwd_len);
+    if (!cwd) {
+        printf("ERROR: unable to create cwd\n");
+        return;
+    }
+    GetCurrentDirectory(cwd_len, cwd);
+    DWORD path_len = cwd_len + 1 + strlen(iniFile) + 1;
+    char *path = calloc(1, path_len);
+     if (!path) {
+        printf("ERROR: unable to create path\n");
+        return;
+    }
+    snprintf(path, path_len, "%s/%s", cwd, iniFile);
+
+    char buf[32];
+
+    WritePrivateProfileString("Path", "Directory", last_opened_dir, path);
+
+    snprintf(buf, sizeof(buf), "%d", sound_enabled);
+    WritePrivateProfileString("Sound", "Enabled", buf, path);
+
+    snprintf(buf, sizeof(buf), "%d", selected_scale);
+    WritePrivateProfileString("Graphics", "Scale", buf, path);
+#ifdef DEBUGMENU
+    snprintf(buf, sizeof(buf), "%d", run_physics);
+    WritePrivateProfileString("Debug", "RunPhysics", buf, path);
+#endif // DEBUGMENU
+}
+
+static void SetGraphicsScale(HWND hwnd){
+    int w,h;
+    getScaleDimension(selected_scale, &w, &h);
+    adjustWindowSize(hwnd, w, h);
+}
+
+static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
+{
+    if (uMsg == BFFM_INITIALIZED) {
+        SendMessage(hwnd, BFFM_SETSELECTION, TRUE, pData);
+    }
+    return 0;
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static int selected_scale = T2_SCALE_P2;
     HMENU hMenu;
 
     switch (msg) {
@@ -134,7 +183,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
                     bi.hwndOwner = hwnd;
                     bi.lpszTitle = "Select a track directory:";
-                    bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI | BIF_NONEWFOLDERBUTTON;
+                    bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NONEWFOLDERBUTTON;
+                    bi.lpfn = BrowseCallbackProc;
+                    bi.lParam = (LPARAM)last_opened_dir;
 
                     pidl = SHBrowseForFolder(&bi);
                     if (pidl) {
@@ -177,11 +228,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
                     CheckMenuItem(hMenu, T2_APP_SOUND, sound_enabled ? MF_CHECKED : MF_UNCHECKED);
 
-                    if (sound_enabled) {
-                        waveOutSetVolume(hWaveOut, SOUND_VOLUME_MAX);
-                    } else {
-                        waveOutSetVolume(hWaveOut, SOUND_VOLUME_MIN);
-                    }
+                        if (sound_enabled) {
+                            sound_on();
+                        } else {
+                            sound_off();
+                        }
                 }
                 break;
 
@@ -202,9 +253,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
             if(LOWORD(wParam)/100 == 401){//gambiarra da boa!
                 selected_scale = LOWORD(wParam);
-                int w,h;
-                getScaleDimension(selected_scale, &w, &h);
-                adjustWindowSize(hwnd, w, h);
+                SetGraphicsScale(hwnd);
             }
         }
         break;
@@ -298,14 +347,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         {
             // TODO (gmb): application does not terminates when this is here
             //             find a place for cleanup
-/*
-            waveOutReset(hWaveOut);
-            for (int i = 0; i < SOUND_CHANNELS; i++) {
-                waveOutUnprepareHeader(hWaveOut, &waveHeaders[i], sizeof(WAVEHDR));
-            }
-            waveOutClose(hWaveOut);
-*/
+            // sound_deinit();
 
+            SaveConfig();
 #ifdef DEBUGMENU
             DestroyDebugConsole();
 #endif
@@ -317,42 +361,23 @@ end:
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
+
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow) {
     (void)hPrev;
     (void)lpCmd;
+    
+    LoadConfig();
 
-    // init sound
-    OPL3_Reset(&chip, OPL3_SAMPLE_RATE);
-
-    WAVEFORMATEX wfx;
-    wfx.wFormatTag = WAVE_FORMAT_PCM;
-    wfx.nChannels = SOUND_CHANNELS;
-    wfx.nSamplesPerSec = OPL3_SAMPLE_RATE;
-    wfx.wBitsPerSample = 16;
-    wfx.nBlockAlign = wfx.nChannels * (wfx.wBitsPerSample / 8);
-    wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
-    wfx.cbSize = 0;
-
-    MMRESULT mmerr = waveOutOpen(&hWaveOut, WAVE_MAPPER, &wfx, (DWORD_PTR)waveOutProc, 0, CALLBACK_FUNCTION);
-    if (mmerr != MMSYSERR_NOERROR) {
-        MessageBox(NULL, "Failed to open waveOut audio device!", szAppName, MB_ICONERROR);
+    BOOL sound_ok = sound_init();
+    if (!sound_ok) {
+        MessageBox(NULL, "Failed to initialise sound!", szAppName, MB_ICONERROR);
         return 0;
     }
 
     if (sound_enabled) {
-        waveOutSetVolume(hWaveOut, SOUND_VOLUME_MAX);
+        sound_on();
     } else {
-        waveOutSetVolume(hWaveOut, SOUND_VOLUME_MIN);
-    }
-
-    for (int i = 0; i < SOUND_CHANNELS; i++) {
-        waveHeaders[i].lpData = (LPSTR)audioBuffers[i];
-        waveHeaders[i].dwBufferLength = sizeof(audioBuffers[i]);
-        waveHeaders[i].dwFlags = 0;
-        waveHeaders[i].dwLoops = 0;
-
-        waveOutPrepareHeader(hWaveOut, &waveHeaders[i], sizeof(WAVEHDR));
-        waveOutWrite(hWaveOut, &waveHeaders[i], sizeof(WAVEHDR));
+        sound_off();
     }
 
     // init windows
@@ -422,6 +447,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow) {
     UpdateWindow(hwnd);
 
     adjustWindowSize(hwnd, 640, 400);
+    SetGraphicsScale(hwnd);
 
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
@@ -460,6 +486,7 @@ void call_init(HWND hwnd, char path[], int complain){
         fclose(f);
     }
 
+    strncpy(last_opened_dir, path, sizeof(last_opened_dir));
     tmp_g_path = path;
     asm_f_init();
     tmp_g_path = 0;
@@ -482,12 +509,4 @@ void call_init(HWND hwnd, char path[], int complain){
     asm_render(); //just to avoid garbage in the framebuffer, maybe not even necessary
 
     SetTimer(hwnd, 122, 1000/HZ_DISPLAY, NULL);
-}
-
-void adlib_callback(){
-    uint16_t ax = call_portal->ax;
-    uint8_t reg = ax >> 8;
-    uint8_t val = ax & 0xFF;
-
-    OPL3_WriteReg(&chip, reg, val);
 }
