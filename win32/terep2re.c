@@ -165,6 +165,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             hMenu = GetMenu(hwnd);
             if (hMenu) {
                 if (!debug_mode) {
+                    // NOTE(gmb): Debug MUST be the 4th menuitem
                     DeleteMenu(hMenu, 3, MF_BYPOSITION);
                     DrawMenuBar(hwnd);
                 }
