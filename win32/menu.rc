@@ -23,15 +23,13 @@ BEGIN
     BEGIN
         MENUITEM "&Enable sound", T2_APP_SOUND
     END
-#ifdef DEBUGMENU
     POPUP "&Debug"
     BEGIN
         MENUITEM "&Blinkenlights", T2_APP_BLINKEN
         MENUITEM SEPARATOR
-        MENUITEM "&Running (3)", T2_APP_PHYS_RUN
-        MENUITEM "Single ste&p (space)", T2_APP_PHYS_STEP
+        MENUITEM "&Running\t3", T2_APP_PHYS_RUN
+        MENUITEM "Single ste&p\tSpace", T2_APP_PHYS_STEP
     END
-#endif // DEBUGMENU
     POPUP "&Help"
     BEGIN
         MENUITEM "&About", T2_APP_ABOUT

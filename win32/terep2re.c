@@ -8,11 +8,7 @@
 
 TCHAR szAppName[] = "Terep2Win32";
 
-#ifdef DEBUGMENU
-    char iniFile[] = "TEREP2RED.INI";
-#else
-    char iniFile[] = "TEREP2RE.INI";
-#endif
+char iniFile[] = "TEREP2RE.INI";
 
 extern void asm_f_init(void);
 extern void asm_render(void);
@@ -39,6 +35,7 @@ LARGE_INTEGER tickfreq;
 int started = 0;
 int run_physics = 1;
 int64_t last_p_update = -1;
+int debug_mode = 0;
 
 char last_opened_dir[MAX_PATH] = "C://";
 int sound_enabled = 1;
@@ -53,32 +50,30 @@ int64_t GetTimeee(void){
     return ret;
 }
 
-#ifdef DEBUGMENU
 static char console_tilte[] = TEXT("TeREp2 - Debug Console");
 static void CreateDebugConsole(void) {
-        BOOL ok;
-        FILE *stream;
+    BOOL ok;
+    FILE *stream;
 
-        ok = AllocConsole();
-        if (!ok)
-            return;
+    ok = AllocConsole();
+    if (!ok)
+        return;
 
-        AttachConsole(GetCurrentProcessId());
-        SetConsoleTitle(console_tilte);
-        freopen_s(&stream, "CON", "w", stdout);
+    AttachConsole(GetCurrentProcessId());
+    SetConsoleTitle(console_tilte);
+    freopen_s(&stream, "CON", "w", stdout);
 
-        printf(" Debug Console for TeREp2\n\n");
+    printf(" Debug Console for TeREp2\n\n");
 }
 
 static void DestroyDebugConsole(void) {
-        FreeConsole();
+    FreeConsole();
 
-        HWND hwnd = FindWindow(NULL, console_tilte);
-        if (hwnd) {
-            PostMessage(hwnd, WM_CLOSE, 0, 0);
-        }
+    HWND hwnd = FindWindow(NULL, console_tilte);
+    if (hwnd) {
+        PostMessage(hwnd, WM_CLOSE, 0, 0);
+    }
 }
-#endif // DEBUGMENU
 
 static void LoadConfig(void){
     DWORD cwd_len = GetCurrentDirectory(0, NULL);
@@ -90,18 +85,21 @@ static void LoadConfig(void){
     GetCurrentDirectory(cwd_len, cwd);
     DWORD path_len = cwd_len + 1 + strlen(iniFile) + 1;
     char *path = calloc(1, path_len);
-     if (!path) {
+    if (!path) {
         printf("ERROR: unable to create path\n");
+        free(cwd);
         return;
     }
-    snprintf(path, path_len, "%s/%s", cwd, iniFile); 
+    snprintf(path, path_len, "%s/%s", cwd, iniFile);
 
     GetPrivateProfileString("Path", "Directory", "C://", last_opened_dir, sizeof(last_opened_dir), path);
     sound_enabled = GetPrivateProfileInt("Sound", "Enabled", sound_enabled, path);
     selected_scale = GetPrivateProfileInt("Graphics", "Scale", selected_scale, path);
-#ifdef DEBUGMENU
+    debug_mode = GetPrivateProfileInt("Debug", "Enabled", debug_mode, path);
     run_physics = GetPrivateProfileInt("Debug", "RunPhysics", run_physics, path);
-#endif // DEBUGMENU
+
+    free(cwd);
+    free(path);
 }
 
 static void SaveConfig(void){
@@ -114,8 +112,9 @@ static void SaveConfig(void){
     GetCurrentDirectory(cwd_len, cwd);
     DWORD path_len = cwd_len + 1 + strlen(iniFile) + 1;
     char *path = calloc(1, path_len);
-     if (!path) {
+    if (!path) {
         printf("ERROR: unable to create path\n");
+        free(cwd);
         return;
     }
     snprintf(path, path_len, "%s/%s", cwd, iniFile);
@@ -129,10 +128,15 @@ static void SaveConfig(void){
 
     snprintf(buf, sizeof(buf), "%d", selected_scale);
     WritePrivateProfileString("Graphics", "Scale", buf, path);
-#ifdef DEBUGMENU
+
+    snprintf(buf, sizeof(buf), "%d", debug_mode);
+    WritePrivateProfileString("Debug", "Enabled", buf, path);
+
     snprintf(buf, sizeof(buf), "%d", run_physics);
     WritePrivateProfileString("Debug", "RunPhysics", buf, path);
-#endif // DEBUGMENU
+
+    free(cwd);
+    free(path);
 }
 
 static void SetGraphicsScale(HWND hwnd){
@@ -154,13 +158,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
     switch (msg) {
         case WM_CREATE: {
-#ifdef DEBUGMENU
-            CreateDebugConsole();
-#endif
-            hMenu = GetMenu(hwnd);
+            if (debug_mode) {
+                CreateDebugConsole();
+            }
 
-            CheckMenuItem(hMenu, T2_APP_PHYS_RUN, run_physics ? MF_CHECKED : MF_UNCHECKED);
-            CheckMenuItem(hMenu, T2_APP_SOUND, sound_enabled ? MF_CHECKED : MF_UNCHECKED);
+            hMenu = GetMenu(hwnd);
+            if (hMenu) {
+                if (!debug_mode) {
+                    DeleteMenu(hMenu, 3, MF_BYPOSITION);
+                    DrawMenuBar(hwnd);
+                }
+
+                CheckMenuItem(hMenu, T2_APP_PHYS_RUN, run_physics ? MF_CHECKED : MF_UNCHECKED);
+                CheckMenuItem(hMenu, T2_APP_SOUND, sound_enabled ? MF_CHECKED : MF_UNCHECKED);
+            }
 
             call_init(hwnd, ".", 0);
         }
@@ -304,19 +315,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 InvalidateRect(hwnd, 0, FALSE);
                 asm_render();
 
-#ifdef DEBUGMENU
-                InvalidateRect(hBlinken, 0, FALSE);
-#endif
+                if (debug_mode) {
+                    InvalidateRect(hBlinken, 0, FALSE);
+                }
             }
         }
         break;
 
         case WM_KEYDOWN:
         {
-            if(wParam == VK_SPACE && !run_physics){
+            if(debug_mode && wParam == VK_SPACE && !run_physics){
                 asm_physics();
             }
-            if(wParam == '3'){
+            if(debug_mode && wParam == '3'){
                 run_physics = !run_physics;
             }
 
@@ -350,9 +361,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             // sound_deinit();
 
             SaveConfig();
-#ifdef DEBUGMENU
-            DestroyDebugConsole();
-#endif
+
+            if (debug_mode) {
+                DestroyDebugConsole();
+            }
+
             PostQuitMessage(0);
         }
     }
@@ -361,12 +374,15 @@ end:
     return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow) {
     (void)hPrev;
     (void)lpCmd;
-    
+
     LoadConfig();
+    // to be sure
+    if (!debug_mode) {
+        run_physics = 1;
+    }
 
     BOOL sound_ok = sound_init();
     if (!sound_ok) {
@@ -397,17 +413,17 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow) {
         return 0;
     }
 
-#ifdef DEBUGMENU
-    wndclassBlinken.lpfnWndProc = BlinkenWndProc;
-    wndclassBlinken.hInstance = hInst;
-    wndclassBlinken.lpszClassName = "Terep2Win32Blinken";
-    wndclassBlinken.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    if (debug_mode) {
+        wndclassBlinken.lpfnWndProc = BlinkenWndProc;
+        wndclassBlinken.hInstance = hInst;
+        wndclassBlinken.lpszClassName = "Terep2Win32Blinken";
+        wndclassBlinken.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 
-    if (!RegisterClass (&wndclassBlinken)){
-        MessageBox(NULL, "This program requires Windows NT!", szAppName, MB_ICONERROR);
-        return 0;
+        if (!RegisterClass (&wndclassBlinken)){
+            MessageBox(NULL, "This program requires Windows NT!", szAppName, MB_ICONERROR);
+            return 0;
+        }
     }
-#endif // DEBUGMENU
 
     QueryPerformanceFrequency(&tickfreq);
 
@@ -424,24 +440,24 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR lpCmd, int nShow) {
         return 0;
     }
 
-#ifdef DEBUGMENU
-    blinkenInit();
-    RECT rc = {0, 0, 1130, 600};
-    dwStyle = WS_OVERLAPPEDWINDOW;
-    AdjustWindowRect(&rc, dwStyle, FALSE);
+    if (debug_mode) {
+        blinkenInit();
+        RECT rc = {0, 0, 1130, 600};
+        dwStyle = WS_OVERLAPPEDWINDOW;
+        AdjustWindowRect(&rc, dwStyle, FALSE);
 
-    hBlinken = CreateWindow("Terep2Win32Blinken", "TeREp2 - Blinkenlights",
-                        dwStyle,
-                        CW_USEDEFAULT, CW_USEDEFAULT,
-                        rc.right - rc.left,
-                        rc.bottom - rc.top,
-                        NULL, NULL, hInst, NULL);
+        hBlinken = CreateWindow("Terep2Win32Blinken", "TeREp2 - Blinkenlights",
+                            dwStyle,
+                            CW_USEDEFAULT, CW_USEDEFAULT,
+                            rc.right - rc.left,
+                            rc.bottom - rc.top,
+                            NULL, NULL, hInst, NULL);
 
-    if (hBlinken == NULL) {
-        MessageBox(NULL, "Unable to create blinken window.", szAppName, MB_ICONERROR);
-        return 0;
+        if (hBlinken == NULL) {
+            MessageBox(NULL, "Unable to create blinken window.", szAppName, MB_ICONERROR);
+            return 0;
+        }
     }
-#endif // DEBUGMENU
 
     ShowWindow(hwnd, nShow);
     UpdateWindow(hwnd);
@@ -462,7 +478,7 @@ void adjustWindowSize(HWND hwnd, int w, int h){
     DWORD dwStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
 
     AdjustWindowRect(&rc, dwStyle, TRUE);
-    SetWindowPos(hwnd, NULL, 
+    SetWindowPos(hwnd, NULL,
         0,0,
         rc.right - rc.left, rc.bottom - rc.top,
         SWP_NOMOVE | SWP_NOREPOSITION | SWP_NOZORDER
@@ -492,7 +508,6 @@ void call_init(HWND hwnd, char path[], int complain){
     tmp_g_path = 0;
 
     started = 1;
-
 
     if(call_portal->ax){
         MessageBox(NULL, "Init reported some kind of error", "Bad", MB_ICONERROR);

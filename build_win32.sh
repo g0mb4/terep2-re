@@ -2,17 +2,6 @@
 
 mkdir -p build
 
-DEBUG_DEF=""
-BLINKEN_SRC=""
-
-if [ "$1" = "-debug" ]; then
-    echo "Debug menu enabled"
-    DEBUG_DEF="-DDEBUGMENU" 
-    BLINKEN_SRC="win32/blinken.c"
-else
-    echo "Tip: you can pass a parameter '-debug' to this command to enable the debug menus"
-fi
-
 echo "It has begun!!!"
 
 cd reasm32
@@ -26,7 +15,7 @@ i686-w64-mingw32-gcc \
     -I./3rd-party/Nuked-OPL3 \
     reasm32/the_thing.obj \
     3rd-party/Nuked-OPL3/opl3.c \
-    win32/{terep2re,fakedoscall,graphics,sound}.c      \
+    win32/{terep2re,fakedoscall,graphics,sound,blinken}.c      \
     ${BLINKEN_SRC}        \
     win32/menu.o          \
     -lole32 -lwinmm -o build/terep2re32.exe
