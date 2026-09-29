@@ -154,8 +154,7 @@ static INT CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM p
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    HMENU hMenu;
-
+    static HMENU hMenu;
     switch (msg) {
         case WM_CREATE: {
             if (debug_mode) {
@@ -325,13 +324,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         case WM_KEYDOWN:
         {
-            if(debug_mode && wParam == VK_SPACE && !run_physics){
+            if(wParam == VK_F7){
+                run_physics = !run_physics;
+                if (debug_mode) {
+                    CheckMenuItem(hMenu, T2_APP_PHYS_RUN, run_physics ? MF_CHECKED : MF_UNCHECKED);
+                }
+            }
+            if(wParam == VK_F8 && !run_physics){
                 asm_physics();
             }
-            if(debug_mode && wParam == '3'){
-                run_physics = !run_physics;
-            }
-
             //no break here, intentional fallthrou
         }
         case WM_KEYUP:
