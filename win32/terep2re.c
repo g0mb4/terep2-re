@@ -353,6 +353,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 call_portal->ax = scanCode;
                 asm_keys();
             }
+
+            // NOTE(gmb): F10 activates the menu bar by default,
+            //            we do not need that
+            if(wParam == VK_F10){
+                return 0;
+            }
         }
         break;
 
